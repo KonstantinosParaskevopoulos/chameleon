@@ -52,7 +52,8 @@ def _getFilePathes(traces_folder):
         [traces_folder + f for f in os.listdir(traces_folder) if f.endswith('.h5')]).tolist()
 
     assert len(
-        traces_files) == 16, f"Expected 16 traces files, found {len(traces_files)}"
+        traces_files) == 1, f"Expected 1 traces files, found {len(traces_files)}" #Changed it to 1 as we will evaluate 
+        #traces_files) == 16, f"Expected 16 traces files, found {len(traces_files)}"
 
     # keep last file for testing
     traces_files = traces_files[:-1]
