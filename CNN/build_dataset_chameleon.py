@@ -56,7 +56,7 @@ def _getFilePathes(traces_folder):
         #traces_files) == 16, f"Expected 16 traces files, found {len(traces_files)}"
 
     # keep last file for testing
-    traces_files = traces_files[:-1]
+    #traces_files = traces_files[:-1] #If we use 16 instead of 1
 
     return traces_files
 
@@ -182,8 +182,8 @@ def createSubsets(dataset_dir: str,
             NpyAppendArray(test_tar_path, delete_if_exists=True) as npa_test_tar:
 
         dataLoader = _dataLoader(traces_files)
-        for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*16), desc="Creating dataset"):
-
+        #for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*16), desc="Creating dataset"):
+        for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*1), desc="Creating dataset"):
             # Cut traces --------------------------------------------------------------------------------------------
             # Cut idling parts from traces
             all_traces, all_noises = _cutCOs(all_traces, sample_labels)
@@ -252,10 +252,23 @@ def createSubsets(dataset_dir: str,
                                         n_other_round_valid:N_WIN_OTHER],
                            noise_rounds[n_noise_round_train+n_noise_round_valid:N_WIN_NOISE])
 
+        # _writeConfig(out_data_dir,
+        #              npa_train_set.shape,
+        #              npa_valid_set.shape,
+        #              npa_test_set.shape,
+        #              N_WIN_FIRST,
+        #              N_WIN_SECOND,
+        #              N_WIN_OTHER,
+        #              N_WIN_NOISE,
+        #              "0.01")
+        train_shape = np.load(train_set_path, mmap_mode="r").shape
+        valid_shape = np.load(valid_set_path, mmap_mode="r").shape
+        test_shape = np.load(test_set_path, mmap_mode="r").shape
+
         _writeConfig(out_data_dir,
-                     npa_train_set.shape,
-                     npa_valid_set.shape,
-                     npa_test_set.shape,
+                     train_shape,
+                     valid_shape,
+                     test_shape,
                      N_WIN_FIRST,
                      N_WIN_SECOND,
                      N_WIN_OTHER,
