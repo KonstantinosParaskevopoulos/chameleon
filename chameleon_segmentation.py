@@ -12,23 +12,26 @@ from inference_pipeline.heuristic import removeFalseNegatives, removeFalsePositi
 ##################################################
 # CNN dataset creation
 ##################################################
-chameleon_path = "</path/to/chameleon/folder>"
-dataset_out_path = "</path/to/output/folder>"
+print("Start: CNN dataset creation")
+chameleon_path = "/local/scratch/paraskevopoulosk/Datasets/BASE"
+dataset_out_path = "/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT"
 
 createSubsets(chameleon_path, dataset_out_path)
 
 ##################################################
 # CNN training
 ##################################################
+print("Start: CNN training")
 config_folder = "CNN/configs/chameleon_base/" # /path/to/experiment/config/folder/
 train(config_folder)
 
 ##################################################
 # Sliding Window Classification
 ##################################################
-SID = "<Neptune_SID>"
-chameleon_file = "</path/to/trace_file.h5>"
-output_file = "</path/to/output_file.npy>"
+print("Start: Sliding Window Classification")
+SID = ""
+chameleon_file = "/local/scratch/paraskevopoulosk/Datasets/BASE/chameleon_base_chunk_1.h5"
+output_file = "/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/output_file.npy"
 
 module = getModule(SID)
 
@@ -41,8 +44,8 @@ saveClassification(classifications, output_file)
 ##################################################
 # Screening
 ##################################################
-
-classification_file = "</path/to/classification_output_file>"
+print("Start: Screening")
+classification_file = output_file #"</path/to/classification_output_file>"
 
 labels = loaderGt(chameleon_file)
 classifications = np.load(classification_file, mmap_mode='r')
@@ -91,7 +94,7 @@ print(f"Total end mean FNR: {round(np.mean(fnrs_e)*100,2)}%")
 ##################################################
 # Visualization
 ##################################################
-
+print("Visualization . . .")
 n_trace = 0
 center = 100_000
 margin = 20_000
@@ -125,3 +128,4 @@ ax[1].legend(loc='lower right', bbox_to_anchor=(1, 0.95))
 
 ax[2].set_xlim(lim)
 ax[2].plot(np.argmax(classifications[n_trace], axis=1))
+print(f"End! Results in: {dataset_out_path}")
