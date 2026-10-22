@@ -183,7 +183,7 @@ def createSubsets(dataset_dir: str,
 
         dataLoader = _dataLoader(traces_files)
         #for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*16), desc="Creating dataset"):
-        for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*1), desc="Creating dataset"):
+        for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*16), desc="Creating dataset"):
             # Cut traces --------------------------------------------------------------------------------------------
             # Cut idling parts from traces
             all_traces, all_noises = _cutCOs(all_traces, sample_labels)

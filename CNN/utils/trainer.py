@@ -57,7 +57,7 @@ def build_trainer(exp_dir, exp_config, neptune_logger, gpu):
         limit_train_batches=trainer_config['limit_train_batches'],
         limit_val_batches=trainer_config['limit_val_batches'],
         callbacks=callbacks,
-        logger=neptune_logger
+        logger=False #neptune_logger # Needs Neptune
     )
     # -------------
     return trainer

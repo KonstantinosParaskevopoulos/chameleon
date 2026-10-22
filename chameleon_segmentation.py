@@ -14,7 +14,7 @@ from inference_pipeline.heuristic import removeFalseNegatives, removeFalsePositi
 ##################################################
 print("Start: CNN dataset creation")
 chameleon_path = "/local/scratch/paraskevopoulosk/Datasets/BASE/"
-dataset_out_path = "/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT"
+dataset_out_path = "/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/"
 
 createSubsets(chameleon_path, dataset_out_path)
 
@@ -30,7 +30,7 @@ train(config_folder)
 ##################################################
 print("Start: Sliding Window Classification")
 SID = ""
-chameleon_file = "/local/scratch/paraskevopoulosk/Datasets/BASE/chameleon_base_chunk_1.h5"
+chameleon_file = "/local/scratch/paraskevopoulosk/Datasets/BASE/"
 output_file = "/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/output_file.npy"
 
 module = getModule(SID)
