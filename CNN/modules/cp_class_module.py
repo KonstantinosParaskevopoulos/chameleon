@@ -19,6 +19,8 @@ from torchmetrics import F1Score as F1
 
 import CNN.models as models
 
+import os
+
 
 class CpClassifier(pl.LightningModule):
     def __init__(self, module_config, gpu=0):
@@ -46,7 +48,8 @@ class CpClassifier(pl.LightningModule):
             if 'weight' in loss_config and 'Entropy' in loss_name:
                 weights = loss_config['weight']
                 class_weights = torch.FloatTensor(
-                    weights).to(torch.device(f'cuda:{gpu}'))
+                    weights).to(torch.device("cpu")) # Can run on CPU ONLY!   
+                    #weights).to(torch.device(f'cuda:{gpu}')) #Needs GPU
                 loss_config['weight'] = class_weights
         else:
             loss_config = {}
@@ -76,7 +79,8 @@ class CpClassifier(pl.LightningModule):
             else:
                 metric_class = getattr(torchmetrics, metric_name)
             metric = metric_class(**metric_conf)
-            self.metrics[metric_name] = metric.to(torch.device(f'cuda:{gpu}'))
+            self.metrics[metric_name] = metric.to(torch.device("cpu")) # Can Run on CPU ONLY!
+            #self.metrics[metric_name] = metric.to(torch.device(f'cuda:{gpu}')) # Needs GPU
         # -----------
 
         self.original_labels_train = []
@@ -128,18 +132,45 @@ class CpClassifier(pl.LightningModule):
             self.log(f'{which_subset}/{metric_name}', val,
                      on_step=True, on_epoch=True)
 
+    # This doesn't work without Neptune AI Logger
+    #  
+    # def log_confusion_matrix(self, outputs, which_subset='valid'):
+    #     target = torch.cat([output['target'] for output in outputs])
+    #     softmax_preds = torch.cat([output['prediction'] for output in outputs])
+    #     preds = torch.argmax(softmax_preds, dim=1)
+
+    #     target = target.cpu().data.numpy()
+    #     preds = preds.cpu().data.numpy()
+
+    #     fig, axis = plt.subplots(figsize=(16, 12))
+    #     ConfusionMatrixDisplay.from_predictions(target, preds, ax=axis)
+    #     self.logger.experiment['{}/confusion_matrix'.format(which_subset)].log(
+    #         neptune.types.File.as_image(fig))
+    
+    # New function for Confusion Matrix Figures -> Saved as PDFs
     def log_confusion_matrix(self, outputs, which_subset='valid'):
         target = torch.cat([output['target'] for output in outputs])
         softmax_preds = torch.cat([output['prediction'] for output in outputs])
         preds = torch.argmax(softmax_preds, dim=1)
 
-        target = target.cpu().data.numpy()
-        preds = preds.cpu().data.numpy()
+        target = target.cpu().numpy()
+        preds = preds.cpu().numpy()
 
         fig, axis = plt.subplots(figsize=(16, 12))
         ConfusionMatrixDisplay.from_predictions(target, preds, ax=axis)
-        self.logger.experiment['{}/confusion_matrix'.format(which_subset)].log(
-            neptune.types.File.as_image(fig))
+
+        # Save the confusion matrix as a PDF
+        output_dir = "/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices"
+        os.makedirs(output_dir, exist_ok=True)
+
+        output_file = os.path.join(
+            output_dir,
+            f"{which_subset}_confusion_matrix_epoch_{self.current_epoch}.pdf"
+        )
+        fig.savefig(output_file, format="pdf", bbox_inches="tight")
+        plt.close(fig)
+
+        print(f"Saved confusion matrix: {output_file}")
 
     def configure_optimizers(self):
         optimizer_name = self.optimizer_config['name']

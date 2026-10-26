@@ -1,0 +1,134 @@
+    
+  File "/home/paraskevopoulosk/chameleon/chameleon_segmentation.py", line 26, in <module>
+    train(config_folder)
+  File "/home/paraskevopoulosk/chameleon/CNN/train.py", line 72, in train
+    pl_trainer.fit(pl_module, pl_datamodule, ckpt_path=checkpoint)
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/trainer/trainer.py", line 544, in fit
+    call._call_and_handle_interrupt(
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/trainer/call.py", line 44, in _call_and_handle_interrupt
+    return trainer_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/trainer/trainer.py", line 580, in _fit_impl
+    self._run(model, ckpt_path=ckpt_path)
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/trainer/trainer.py", line 987, in _run
+    results = self._run_stage()
+              ^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/trainer/trainer.py", line 1033, in _run_stage
+    self.fit_loop.run()
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/loops/fit_loop.py", line 205, in run
+    self.advance()
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/loops/fit_loop.py", line 363, in advance
+    self.epoch_loop.run(self._data_fetcher)
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/loops/training_epoch_loop.py", line 140, in run
+    self.advance(data_fetcher)
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/loops/training_epoch_loop.py", line 250, in advance
+    batch_output = self.automatic_optimization.run(trainer.optimizers[0], batch_idx, kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/loops/optimization/automatic.py", line 190, in run
+    self._optimizer_step(batch_idx, closure)
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/loops/optimization/automatic.py", line 268, in _optimizer_s
+tep
+    call._call_lightning_module_hook(
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/trainer/call.py", line 157, in _call_lightning_module_hook
+    output = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/core/module.py", line 1303, in optimizer_step
+    optimizer.step(closure=optimizer_closure)
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/core/optimizer.py", line 152, in step
+    step_output = self._strategy.optimizer_step(self._optimizer, closure, **kwargs)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/strategies/strategy.py", line 239, in optimizer_step
+    return self.precision_plugin.optimizer_step(optimizer, model=model, closure=closure, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/plugins/precision/precision.py", line 122, in optimizer_ste
+p
+    return optimizer.step(closure=closure, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/optim/lr_scheduler.py", line 75, in wrapper
+    return wrapped(*args, **kwargs)
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/optim/optimizer.py", line 391, in wrapper
+    out = func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/optim/optimizer.py", line 76, in _use_grad
+    ret = func(self, *args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/optim/adamw.py", line 165, in step
+    loss = closure()
+           ^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/plugins/precision/precision.py", line 108, in _wrap_closure
+    closure_result = closure()
+                     ^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/loops/optimization/automatic.py", line 144, in __call__
+    self._result = self.closure(*args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/loops/optimization/automatic.py", line 129, in closure
+    step_output = self._step_fn()
+                  ^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/loops/optimization/automatic.py", line 318, in _training_st
+ep
+    training_step_output = call._call_strategy_hook(trainer, "training_step", *kwargs.values())
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/trainer/call.py", line 309, in _call_strategy_hook
+    output = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/strategies/strategy.py", line 391, in training_step
+    return self.lightning_module.training_step(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/CNN/modules/cp_class_module.py", line 100, in training_step
+    outputs = self.step_batch(batch)
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/CNN/modules/cp_class_module.py", line 94, in step_batch
+    y_hat = self(x)
+            ^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
+  File "/home/paraskevopoulosk/chameleon/CNN/modules/cp_class_module.py", line 89, in forward
+    return self.model(x)
+           ^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/CNN/models/resnet_time_series_classifier.py", line 45, in forward
+    x = self.encoder(x)
+        ^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/CNN/models/resnet.py", line 233, in forward
+    out = net(out)
+          ^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/CNN/models/resnet.py", line 82, in forward
+    out = self.conv2(out)
+          ^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/CNN/models/custom_layers.py", line 42, in forward
+    net = F.pad(net, (pad_left, pad_right), "constant", 0)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/functional.py", line 4522, in pad
+    return torch._C._nn.pad(input, pad, mode, value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 316.00 MiB. GPU

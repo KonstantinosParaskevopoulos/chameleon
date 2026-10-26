@@ -9,8 +9,10 @@ import os
 from omegaconf import OmegaConf
 
 import pytorch_lightning as pl
+from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 import pytorch_lightning.callbacks.early_stopping as early_stopping
+
 
 
 def build_trainer(exp_dir, exp_config, neptune_logger, gpu):
@@ -45,19 +47,25 @@ def build_trainer(exp_dir, exp_config, neptune_logger, gpu):
     callbacks.append(lr_monitor)
     # --------------------
     
-
+    csv_logger = CSVLogger(  # To be used for experiment logging instead of Neptune AI Logger
+        save_dir="/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/logs",
+        name="chameleon"
+    )
     # Build Trainer
     # -------------
     trainer_config = exp_config['trainer']
     trainer = pl.Trainer(
-        accelerator="gpu", devices=[gpu],
+        accelerator="cpu", devices=1, # Can run in CPU only
+        # accelerator="gpu", devices=[gpu], # Needs GPU
         max_epochs=trainer_config['max_epochs'],
         check_val_every_n_epoch=trainer_config['check_val_every_n_epoch'],
         log_every_n_steps=trainer_config['log_every_n_steps'],
         limit_train_batches=trainer_config['limit_train_batches'],
         limit_val_batches=trainer_config['limit_val_batches'],
         callbacks=callbacks,
-        logger=False #neptune_logger # Needs Neptune
+        #logger=False # This doesn't use ANY logger
+        #logger=neptune_logger # This Needs Neptune
+        logger=csv_logger # This uses CSV Logger
     )
     # -------------
     return trainer
