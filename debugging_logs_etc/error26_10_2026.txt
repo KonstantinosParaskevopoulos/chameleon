@@ -1,0 +1,19 @@
+Loading_train_set /local/scratch/paraskevopoulosk/Datasets/BASE/chameleon_base_chunk_1.h5/train_set.npy
+  File "/home/paraskevopoulosk/chameleon/chameleon_segmentation.py", (line_26__in_module)
+    train(config_folder)
+  
+  File "/home/paraskevopoulosk/chameleon/CNN/train.py", (line_72__in_train)
+    pl_trainer.fit(pl_module, pl_datamodule, ckpt_path=checkpoint)
+
+  File "/home/paraskevopoulosk/chameleon/CNN/modules/cp_class_datamodule.py", (line_28__in_setup)
+    self.train_set = CpClassifierDataset()
+                     ^^^^^^^^^^^^^^^^^^^^
+  
+  File "/home/paraskevopoulosk/chameleon/CNN/datasets/cp_class_dataset.py", (line_21__in__init__)
+    self.windows = np.load()
+                   ^^^^^^^^
+    self.windows = np.load(
+      os.path.join(data_dir, '{}_set.npy'.format(which_subset)), mmap_mode='r+')
+
+
+NotADirectoryError: [Errno_20] Not a directory: '/local/scratch/paraskevopoulosk/Datasets/BASE/chameleon_base_chunk_1.h5/train_set.npy'
