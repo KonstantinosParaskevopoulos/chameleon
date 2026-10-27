@@ -6,6 +6,7 @@ Authors :
 """
 
 import os
+import glob
 from tqdm.auto import tqdm
 import torch
 import numpy as np
@@ -68,44 +69,90 @@ def _slidingWindowClassify(module, traces, device, window_size, stride, batch_si
     return classified_points
 
 
-def getModule(SID: str,
-              neptune_config: str = 'CNN/configs/common/neptune_configs.yaml') -> torch.nn.Module:
+# def getModule(SID: str,
+#               neptune_config: str = 'CNN/configs/common/neptune_configs.yaml') -> torch.nn.Module:
+#     """
+#     Get the best model from a Neptune Run and return the corresponding module.
+
+#     Parameters
+#     ----------
+#     `SID` : str
+#         The Neptune Run ID.
+#     `neptune_config` : str, optional
+#         The path to the Neptune configuration file (default is 'CNN/configs/common/neptune_configs.yaml').
+
+#     Returns
+#     -------
+#     The best model from the Neptune Run.
+#     """
+
+#     # Get Neptune Run (by SID)
+#     df = get_neptune_run(neptune_config, SID)
+
+#     # Get experiment name
+#     exp_name = df['sys/name'].iloc[0]
+
+#     # Get best model path
+#     best_model_ckpt = df['experiment/model/best_model_path'].iloc[0]
+
+#     # Get config dir
+#     config_dir = get_experiment_config_dir(best_model_ckpt, exp_name)
+
+#     _, module_config, __ = parse_arguments(config_dir)
+
+#     # Build Model
+#     # -----------
+#     module_name = module_config['module']['name']
+#     module_config = module_config['module']['config']
+#     module_class = getattr(modules, module_name)
+#     module = module_class.load_from_checkpoint(best_model_ckpt,
+#                                                module_config=module_config)
+
+#     return module
+
+def getModule(
+    checkpoint_dir: str,
+    config_dir: str = 'CNN/configs/chameleon_base/'
+) -> torch.nn.Module:
     """
-    Get the best model from a Neptune Run and return the corresponding module.
+    Get the best model and return the corresponding module.
 
     Parameters
     ----------
-    `SID` : str
-        The Neptune Run ID.
-    `neptune_config` : str, optional
-        The path to the Neptune configuration file (default is 'CNN/configs/common/neptune_configs.yaml').
+    `checkpoint_dir` : str
+        The directory containing the best model checkpoin.
+    `config_dir` : str, optional
+        The path to the configuration file (default is 'CNN/configs/chameleon_base/').
 
     Returns
     -------
-    The best model from the Neptune Run.
+    The best model from the train run.
     """
 
-    # Get Neptune Run (by SID)
-    df = get_neptune_run(neptune_config, SID)
+    checkpoints = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
 
-    # Get experiment name
-    exp_name = df['sys/name'].iloc[0]
+    if len(checkpoints) != 1:
+        raise RuntimeError(
+            f"Expected exactly one checkpoint in {checkpoint_dir}, "
+            f"but found {len(checkpoints)}: {checkpoints}"
+        )
 
-    # Get best model path
-    best_model_ckpt = df['experiment/model/best_model_path'].iloc[0]
-
-    # Get config dir
-    config_dir = get_experiment_config_dir(best_model_ckpt, exp_name)
+    checkpoint_path = checkpoints[0]
 
     _, module_config, __ = parse_arguments(config_dir)
 
-    # Build Model
-    # -----------
     module_name = module_config['module']['name']
     module_config = module_config['module']['config']
     module_class = getattr(modules, module_name)
-    module = module_class.load_from_checkpoint(best_model_ckpt,
-                                               module_config=module_config)
+
+    module = module_class.load_from_checkpoint(
+        checkpoint_path,
+        module_config=module_config,
+        map_location='cpu'
+    )
+
+    module.eval()
+    print(f"Loaded checkpoint: {checkpoint_path}")
 
     return module
 

@@ -13,9 +13,13 @@ from inference_pipeline.heuristic import removeFalseNegatives, removeFalsePositi
 # CNN dataset creation
 ##################################################
 print("Start: CNN dataset creation")
-chameleon_path = "/local/scratch/paraskevopoulosk/Datasets/BASE/"
-dataset_out_path = "/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/"
+countermeasure="base"
+chameleon_path = f"/local/scratch/paraskevopoulosk/Datasets/{countermeasure.upper()}/"
+dataset_out_path = f"/local/scratch/paraskevopoulosk/Datasets/{countermeasure.upper()}/CHAM_OUT/"
 
+# exp_name = f"{exp_name}_{countermeasure}"
+# exp_dir = os.path.join(exp_config['log_dir'], exp_name)
+model_dir=f"{dataset_out_path}ResNet_v1_{countermeasure}/checkpoints"
 createSubsets(chameleon_path, dataset_out_path)
 
 ##################################################
@@ -30,10 +34,16 @@ train(config_folder)
 ##################################################
 print("Start: Sliding Window Classification")
 SID = ""
-chameleon_file = "/local/scratch/paraskevopoulosk/Datasets/BASE/"
+chameleon_file = "/local/scratch/paraskevopoulosk/Datasets/BASE/chameleon_base_chunk_1.h5"
 output_file = "/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/output_file.npy"
 
-module = getModule(SID)
+#def getModule(
+#     checkpoint_dir: str,
+#     config_dir: str = 'CNN/configs/chameleon_base/'
+# ) -> torch.nn.Module:
+
+#module = getModule(SID)
+module = getModule(model_dir, config_folder)
 
 window_size = 20_000
 stride = 100

@@ -35,12 +35,13 @@ def build_neptune_logger(exp_name, tags, neptune_config_file, SID=None):
     user = neptune_config['user']
     token = neptune_config['token']
     project = neptune_config['project']
-    id = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    #id = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     kwargs = {}
     kwargs['prefix'] = 'experiment'
     kwargs['project'] = f'{user}/{project}'
-    kwargs['name'] = f'{exp_name}_{id}'
+    #kwargs['name'] = f'{exp_name}_{id}'
+    kwargs['name'] = f'{exp_name}'
     kwargs['description'] = ''
     kwargs['tags'] = tags
 
@@ -55,7 +56,8 @@ def build_neptune_logger(exp_name, tags, neptune_config_file, SID=None):
                 api_token=token, project=kwargs['project'] , with_id=SID
             )
             neptune_logger = NeptuneLogger(run=run, prefix='experiment')
-            name = df['sys/name'].values[0]
+            name = kwargs['name']
+            #name = df['sys/name'].values[0]
         else:
             raise Exception("No run found with the given SID")
     else:
@@ -89,14 +91,37 @@ def get_checkpoint(neptune_config_file, SID):
         raise Exception("No run found with the given SID")
     return checkpoint
 
+# def init_experiment_dir(exp_config, exp_name):
+#     exp_dir = os.path.join(exp_config['log_dir'], exp_name)
+#     print(exp_dir)
+#     if not os.path.exists(exp_dir):
+#         os.makedirs(exp_dir)
+#     #else:
+#     #    raise Exception("Experiment folder already exists.")
+#     return exp_dir
+
 def init_experiment_dir(exp_config, exp_name):
+    # Remove the countermeasure prefix from the experiment name.
+    # Expected input example: chameleon_base
+    countermeasure = exp_name.removeprefix("chameleon_")
+    exp_name = f"{exp_name}_{countermeasure}"
+
     exp_dir = os.path.join(exp_config['log_dir'], exp_name)
-    print(exp_dir)
-    if not os.path.exists(exp_dir):
-        os.makedirs(exp_dir)
-    #else:
-    #    raise Exception("Experiment folder already exists.")
+
+    if os.path.exists(exp_dir): # Delete old Directory and make a new one
+        if not os.path.isdir(exp_dir):
+            raise RuntimeError(
+                f"Experiment path exists but is not a directory: {exp_dir}"
+            )
+
+        print(f"Removing previous experiment: {exp_dir}")
+        shutil.rmtree(exp_dir)
+
+    os.makedirs(exp_dir, exist_ok=True)
+    print(f"Experiment directory: {exp_dir}")
+
     return exp_dir
+
 
 
 def save_experiment_configs(exp_dir, original_config_dir):
