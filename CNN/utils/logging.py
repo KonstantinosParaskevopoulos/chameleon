@@ -100,10 +100,9 @@ def get_checkpoint(neptune_config_file, SID):
 #     #    raise Exception("Experiment folder already exists.")
 #     return exp_dir
 
-def init_experiment_dir(exp_config, exp_name):
+def init_experiment_dir(exp_config, exp_name, countermeasure):
     # Remove the countermeasure prefix from the experiment name.
     # Expected input example: chameleon_base
-    countermeasure = exp_name.removeprefix("chameleon_")
     exp_name = f"{exp_name}_{countermeasure}"
 
     exp_dir = os.path.join(exp_config['log_dir'], exp_name)

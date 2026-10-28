@@ -10,9 +10,9 @@ import pytorch_lightning as pl
 from CNN.utils import *
 
 
-def train(config_dir: str,
+def train(config_dir: str, countermeasure: str,
           neptune_SID: str = None,
-          gpu: int = 0) -> None:
+          gpu: int = 0,) -> None:
     """
     Train a model using the given configuration files.
 
@@ -41,7 +41,7 @@ def train(config_dir: str,
     # --------------------
     
     # Initialize Experiment Directory
-    exp_dir = init_experiment_dir(exp_config, exp_name_id)
+    exp_dir = init_experiment_dir(exp_config, exp_name_id, countermeasure)
 
     if not neptune_SID:
         # Save Experiment Config Files

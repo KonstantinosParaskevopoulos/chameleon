@@ -26,8 +26,8 @@ createSubsets(chameleon_path, dataset_out_path)
 # CNN training
 ##################################################
 print("Start: CNN training")
-config_folder = "CNN/configs/chameleon_base/" # /path/to/experiment/config/folder/
-train(config_folder)
+config_folder = f"CNN/configs/chameleon_{countermeasure}/" # /path/to/experiment/config/folder/
+train(config_folder, countermeasure)
 
 ##################################################
 # Sliding Window Classification
