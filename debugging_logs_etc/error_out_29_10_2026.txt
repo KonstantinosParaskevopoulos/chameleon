@@ -1,0 +1,56 @@
+0it [00:04, ?it/s]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/paraskevopoulosk/chameleon/chameleon_segmentation.py", line 51, in <module>
+    classifications = classifyTrace(chameleon_file, module, stride, window_size, batch_size=1024)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/inference_pipeline/sliding_window_classification.py", line 198, in classifyTrace
+    segmentation = _slidingWindowClassify(module, traces, device,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/inference_pipeline/sliding_window_classification.py", line 64, in _slidingWindowClassify
+    ret = _classify(trace, module, window_size, device, stride, batch_size)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/inference_pipeline/sliding_window_classification.py", line 51, in _classify
+    y_hat = module(windows_batch)
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/CNN/modules/cp_class_module.py", line 91, in forward
+    return self.model(x)
+           ^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/CNN/models/resnet_time_series_classifier.py", line 45, in forward
+    x = self.encoder(x)
+        ^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/CNN/models/resnet.py", line 224, in forward
+    out = self.first_block_bn(out)
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 175, in forward
+    return F.batch_norm(
+           ^^^^^^^^^^^^^
+  File "/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/torch/nn/functional.py", line 2509, in batch_norm
+    return torch.batch_norm(
+           ^^^^^^^^^^^^^^^^^
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 1.22 GiB. GPU

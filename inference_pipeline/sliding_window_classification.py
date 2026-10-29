@@ -186,8 +186,10 @@ def classifyTrace(trace_file: str,
     A classification score for each winodw in the trace.
     """
     # Get Device
-    device = torch.device(
-        f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
+    #device = torch.device( # This uses GPU if it exists
+    #    f'cuda:{gpu}' if torch.cuda.is_available() else 'cpu')
+    
+    device = torch.device("cpu") # This uses only CPU
 
     # Set Module
     module.to(device)
