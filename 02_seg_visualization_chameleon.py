@@ -1,10 +1,8 @@
 import numpy as np # type: ignore
 from tqdm.auto import tqdm # type: ignore
+import os
 
-from CNN.train import train 
-from inference_pipeline.sliding_window_classification import getModule, classifyTrace, saveClassification
 from inference_pipeline.segmentation import *
-from CNN.build_dataset_chameleon import createSubsets
 from inference_pipeline.debug import *
 from matplotlib import pyplot as plt # type: ignore
 from inference_pipeline.heuristic import removeFalseNegatives, removeFalsePositives, removeFalsePositives_basic
@@ -23,17 +21,31 @@ config_folder = f"CNN/configs/chameleon_{countermeasure}/" # /path/to/experiment
 ##################################################
 print("Start: Sliding Window Classification")
 SID = ""
-chameleon_file = "/local/scratch/paraskevopoulosk/Datasets/BASE/chameleon_base_chunk_1.h5"
-output_file = "/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/output_file.npy"
+chameleon_file = f"{chameleon_path}chameleon_base_chunk_1.h5"
+output_file = f"{dataset_out_path}output_file.npy"
 
-#module = getModule(SID)
-module = getModule(model_dir, config_folder)
+plot_output_dir = f"{dataset_out_path}plots"
+os.makedirs(plot_output_dir, exist_ok=True)
 
-window_size = 20_000 # TODO: make Dictionary based on values proposed by Chameleon Authors
-stride = 100
 
-classifications = classifyTrace(chameleon_file, module, stride, window_size, batch_size=1024)
-saveClassification(classifications, output_file)
+win_sizes_per_counter = {
+    "base"  : 10_000,
+    "dfs"   : 10_000,
+    "rd"    : 20_000,
+    "mrp"   : 20_000,
+    "chf"   : 30_000,
+}
+
+stride_per_counter = {
+    "base"  : 50,
+    "dfs"   : 50,
+    "rd"    : 100,
+    "mrp"   : 100,
+    "chf"   : 100,
+}
+
+window_size = win_sizes_per_counter[countermeasure] #20_000
+stride = stride_per_counter[countermeasure]#100
 
 ##################################################
 # Screening
@@ -63,9 +75,34 @@ for classification, gt, gt_e in tqdm(zip(classifications, gts_starts, gts_ends),
 starts = []
 ends = []
 
+# Original Code
+
+# for idx in tqdm(range(len(CPs))):
+#     s, e = removeFalsePositives_basic(CPs[idx]['starts'], CPs[idx]['ends'])
+#     s, e = removeFalseNegatives(s, e, classifications[idx])
+#     starts.append(s)
+#     ends.append(e)
+
+# Test Code
 for idx in tqdm(range(len(CPs))):
-    s, e = removeFalsePositives_basic(CPs[idx]['starts'], CPs[idx]['ends'])
+    co_starts = CPs[idx]['starts']
+    co_ends = CPs[idx]['ends']
+
+    print(
+        f"\nTrace {idx}: "
+        f"{len(co_starts)} detected starts, "
+        f"{len(co_ends)} detected ends"
+    )
+
+    if len(co_starts) != len(co_ends):
+        print("WARNING: Different numbers of starts and ends!")
+        #print("Starts:", co_starts)
+        #print("Ends:", co_ends)
+
+    s, e = removeFalsePositives_basic(co_starts, co_ends)
+
     s, e = removeFalseNegatives(s, e, classifications[idx])
+
     starts.append(s)
     ends.append(e)
 
@@ -89,6 +126,11 @@ print(f"Total end mean FNR: {round(np.mean(fnrs_e)*100,2)}%")
 # Visualization
 ##################################################
 print("Visualization . . .")
+
+# Output directory for plots
+plot_output_dir = "/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/plots"
+os.makedirs(plot_output_dir, exist_ok=True)
+
 n_trace = 0
 center = 100_000
 margin = 20_000
@@ -108,7 +150,6 @@ for sample in gts_starts[n_trace][1:]:
 ax[0].axvline(x=gts_starts[n_trace][0]//stride, color='r', linestyle='--', label='Start GT')
 ax[0].legend(loc='lower right', bbox_to_anchor=(1, 0.95))
 
-
 ax[1].set_xlim(lim)
 for sample in ends[n_trace][1:]:
     ax[1].axvline(x=sample, color='grey', linestyle='-')
@@ -119,7 +160,25 @@ for sample in gts_ends[n_trace][1:]:
 ax[1].axvline(x=gts_ends[n_trace][0]//stride, color='y', linestyle='--', label='End GT')
 ax[1].legend(loc='lower right', bbox_to_anchor=(1, 0.95))
 
-
 ax[2].set_xlim(lim)
 ax[2].plot(np.argmax(classifications[n_trace], axis=1))
+
+# # Save figure
+# output_file = os.path.join(plot_output_dir, f"trace_{n_trace}_visualization.png")
+# fig.savefig(output_file, dpi=300, bbox_inches='tight')
+# plt.close(fig)
+
+# print(f"Visualization saved to: {output_file}")
+# print(f"End! Results in: {dataset_out_path}")
+
+# Save figure as PNG and PDF
+plot_output_file = os.path.join(plot_output_dir, f"trace_{n_trace}_visualization")
+
+fig.savefig(f"{plot_output_file}.png", dpi=300, bbox_inches='tight')
+fig.savefig(f"{plot_output_file}.pdf", bbox_inches='tight')
+
+plt.close(fig)
+
+print(f"Visualizations saved to: {plot_output_file}.png and {plot_output_file}.pdf")
 print(f"End! Results in: {dataset_out_path}")
+
