@@ -122,13 +122,91 @@ print(f"Total start mean FNR: {round(np.mean(fnrs_s)*100,2)}%")
 print(f"Total end mean FPR: {round(np.mean(fprs_e)*100,2)}%")
 print(f"Total end mean FNR: {round(np.mean(fnrs_e)*100,2)}%") 
 
+
+##################################################
+# Save Segmentation Results
+##################################################
+print("Saving segmentation results...")
+
+segmentation_output_dir = "segmentation_results" #os.path.join(dataset_out_path, "segmentation_results")
+os.makedirs(segmentation_output_dir, exist_ok=True)
+
+for idx, (trace_starts, trace_ends) in enumerate(zip(starts, ends)):
+    output_file = os.path.join(
+        segmentation_output_dir,
+        f"trace_{idx}_segments.txt"
+    )
+
+    with open(output_file, "w") as f:
+        for start, end in zip(trace_starts, trace_ends):
+            f.write(f"{start}\t{end}\n")
+
+print(f"Segmentation results saved to: {segmentation_output_dir}")
+
+
+##################################################
+# Validate Segmentation Results
+##################################################
+print("Checking segmentation results...")
+
+for idx, (trace_starts, trace_ends) in enumerate(zip(starts, ends)):
+
+    issues = []
+
+    # Check whether the number of starts and ends matches
+    if len(trace_starts) != len(trace_ends):
+        issues.append(
+            f"Unequal number of starts ({len(trace_starts)}) "
+            f"and ends ({len(trace_ends)})"
+        )
+
+    # Check individual regions
+    for i, (start, end) in enumerate(zip(trace_starts, trace_ends)):
+
+        if start >= end:
+            issues.append(
+                f"Invalid region {i}: start={start}, end={end}"
+            )
+
+        # Check ordering and overlap with the previous region
+        if i > 0:
+            prev_start = trace_starts[i - 1]
+            prev_end = trace_ends[i - 1]
+
+            if start < prev_start:
+                issues.append(
+                    f"Out-of-order start at region {i}: "
+                    f"{start} < previous start {prev_start}"
+                )
+
+            if end < prev_end:
+                issues.append(
+                    f"Out-of-order end at region {i}: "
+                    f"{end} < previous end {prev_end}"
+                )
+
+            if start < prev_end:
+                issues.append(
+                    f"Overlap between regions {i-1} and {i}: "
+                    f"previous end={prev_end}, current start={start}"
+                )
+
+    # Report results
+    if issues:
+        print(f"\nTrace {idx}: {len(issues)} issue(s) found")
+        for issue in issues:
+            print(f"  - {issue}")
+    else:
+        print(f"Trace {idx}: OK ({len(trace_starts)} regions)")
+
+
 ##################################################
 # Visualization
 ##################################################
 print("Visualization . . .")
 
 # Output directory for plots
-plot_output_dir = "/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/plots"
+plot_output_dir = "plots"#f"{dataset_out_path}/plots"
 os.makedirs(plot_output_dir, exist_ok=True)
 
 n_trace = 0
