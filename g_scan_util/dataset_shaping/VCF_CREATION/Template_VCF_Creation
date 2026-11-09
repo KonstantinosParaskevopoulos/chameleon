@@ -1,0 +1,65 @@
+# Argument parsing
+    parser = argparse.ArgumentParser(description="Genome Scanning VCF generator")
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable sanity checks and debug output"
+    )
+    parser.add_argument(
+        "--prefix",
+        type=str,
+        default="",
+        help="Prefix of output file"
+    )
+    parser.add_argument(
+        "--metadata",
+        action="store_true",
+        help="Export Metadata to a txt file named the same as the vcf"
+    )
+    parser.add_argument(
+        "--input_h5",
+        type=str,
+        default=f"{LOCAL_PATH}/Datasets/BASE/chameleon_base_chunk_1.h5",
+        help="Path to the chameleon file"
+    )
+    parser.add_argument(
+        "--trace_samples",
+        type=int,
+        default=1000,
+        help="Number of trace samples to load"
+    )
+    parser.add_argument(
+        "--start_sample",
+        type=int,
+        default=0,
+        help="Starting point"
+    )
+    parser.add_argument(
+        "--vcf_samples",
+        type=int,
+        default=100,
+        help="Number of VCF samples per trace"
+    )
+    parser.add_argument(
+        "--offset",
+        type=int,
+        default=0,
+        help="Offset value for normalization"
+    )
+    parser.add_argument(
+        "--save_folder",
+        type=str,
+        default=f"{LOCAL_PATH}/VCF_CREATION/Testing_VCFs",
+        help="Offset value for normalization"
+    )
+    parser.add_argument(
+        "--ID",
+        type=int,
+        default=0,
+        help="Trace / Metadata ID Number"
+    )
+
+python -m main --vcf_samples 50 --name --metadata --save_folder /home/konstantinos/Documents/GitHub/Genome-Scanning/Datasets --start_sample 3356315 --trace_samples 383144 --input_h5 /home/konstantinos/Documents/GitHub/Genome-Scanning/Datasets/BASE/chameleon_base_chunk_1.h5
+python -m single_vcf --vcf_samples 100 --prefix AES_100 --metadata --save_folder /home/konstantinos/Documents/GitHub/Genome-Scanning/Datasets --start_sample 0 --trace_samples 16564324 --input_h5 /home/konstantinos/Documents/GitHub/Genome-Scanning/Datasets/BASE/chameleon_base_chunk_1.h5
+
+python -m single_vcf --debug --vcf_samples 100 --prefix AES_100 --metadata --save_folder /local/scratch/paraskevopoulosk/Datasets/ --start_sample 0 --trace_samples 0 --input_h5 /local/scratch/paraskevopoulosk/Datasets/RD/chameleon_rd_chunk_1.h5 --ID 0 --offset 0

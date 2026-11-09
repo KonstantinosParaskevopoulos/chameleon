@@ -1,0 +1,20 @@
+First 10 Samples: [-1324 -1195  -904 -1486  -856 -1308 -1243  -921 -1469  -840]
+Original min/max: -2406 / -356
+Normalized min/max: -0.08742368966341019 / 0.41318681836128235
+ADC range check:
+  Expected range: [-2048, 2047]
+  Below min: 808715
+  Above max: 0
+  WARNING: Out-of-range ADC samples detected!
+Normalization bounds check:
+  Min: -0.08742368966341019
+  Max: 0.41318681836128235
+  WARNING: Normalized values outside [0,1]!
+Endpoint mapping check:
+  TRACE_MIN → 0.0
+  TRACE_MAX → 1.0
+Zero-code mapping check:
+  ADC 0 → 0.5001221001221001
+Statistics check:
+  Original mean/std: -1220.464557 / 378.860481
+  Normalized mean/std: 0.202084 / 0.092518
