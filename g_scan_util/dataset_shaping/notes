@@ -1,0 +1,5 @@
+python ~/Genome-Scanning/VCF_CREATION/separate_one_trace_partition_vcf.py 
+--countermeasure $TST_COUNTERMEASURE 
+--vcf_samples 100 
+--offset $OFFSET 
+--trace_ID $j
