@@ -8,29 +8,29 @@ from .segmentation import majorityFilter
 import numpy as np
 
 
-#def removeFalsePositives_basic(COstarts: list, COends: list) -> tuple:
+# def removeFalsePositives_basic(COstarts: list, COends: list) -> tuple:
 #    '''
 #    Remove false positives from identified COs.
 #    This is a basic and simple implemantation of the algorithm, for 
 #    a more robust implemention ses "removeFalsePositives()"
-#
+
 #    Parameters
 #    -----------
 #    COstarts : list
 #        List of start points of the COs.
 #    COends : list
 #        List of end points of the COs.
-#
+
 #    Returns
-#    
-#    
+   
+   
 #    -------
 #    list
 #        List of start points of the COs after removing false positives.
 #    list
 #        List of end points of the COs after removing false positives.
 #    '''
-#
+
 #    starts, ends = [], []
 #    i, j = 0, 0
 #    while i < len(COstarts)-1 and j < len(COends)-1:
@@ -46,7 +46,7 @@ import numpy as np
 #            j += 1
 #        else:
 #            j += 2
-#
+
 #    starts.extend(COstarts[i:])
 #    ends.extend(COends[j:])
 #    return starts, ends

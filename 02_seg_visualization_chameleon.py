@@ -123,6 +123,19 @@ print(f"Total end mean FPR: {round(np.mean(fprs_e)*100,2)}%")
 print(f"Total end mean FNR: {round(np.mean(fnrs_e)*100,2)}%") 
 
 
+ious_s = []
+ious_e = []
+
+for idx in tqdm(range(len(CPs))):
+    iou_s = IoU(gts_starts[idx], gts_ends[idx], np.asarray(starts[idx]), stride)
+    ious_s.append(iou_s)
+
+    iou_e = IoU(gts_ends[idx], gts_starts[idx], np.asarray(ends[idx]), stride)
+    ious_e.append(iou_e)
+
+print(f"Total start mean IoU: {round(np.mean(ious_s)*100,2)}%")
+#print(f"Total end mean IoU: {round(np.mean(ious_e)*100,2)}%") 
+
 ##################################################
 # Save Segmentation Results
 ##################################################
@@ -192,12 +205,12 @@ for idx, (trace_starts, trace_ends) in enumerate(zip(starts, ends)):
                 )
 
     # Report results
-    if issues:
-        print(f"\nTrace {idx}: {len(issues)} issue(s) found")
-        for issue in issues:
-            print(f"  - {issue}")
-    else:
-        print(f"Trace {idx}: OK ({len(trace_starts)} regions)")
+    # if issues:
+    #     print(f"\nTrace {idx}: {len(issues)} issue(s) found")
+    #     for issue in issues:
+    #         print(f"  - {issue}")
+    # else:
+    #     print(f"Trace {idx}: OK ({len(trace_starts)} regions)")
 
 
 ##################################################
@@ -210,52 +223,53 @@ plot_output_dir = "plots"#f"{dataset_out_path}/plots"
 os.makedirs(plot_output_dir, exist_ok=True)
 
 n_trace = 0
-center = 100_000
-margin = 20_000
-lim = (center-margin, center+margin)
+for n_trace in range(16):
+    center = 100_000
+    margin = 20_000
+    lim = (center-margin, center+margin)
 
-fig, ax = plt.subplots(3, figsize=(13, 7))
-plt.rcParams.update({'font.size': 18})
-fig.tight_layout(pad=2.0)
+    fig, ax = plt.subplots(3, figsize=(13, 7))
+    plt.rcParams.update({'font.size': 18})
+    fig.tight_layout(pad=2.0)
 
-ax[0].set_xlim(lim)
-for sample in starts[n_trace][1:]:
-    ax[0].axvline(x=sample, color='black', linestyle='-')
-ax[0].axvline(x=starts[n_trace][0], color='black', linestyle='-', label="Found CO's start")
+    ax[0].set_xlim(lim)
+    for sample in starts[n_trace][1:]:
+        ax[0].axvline(x=sample, color='black', linestyle='-')
+    ax[0].axvline(x=starts[n_trace][0], color='black', linestyle='-', label="Found CO's start")
 
-for sample in gts_starts[n_trace][1:]:
-    ax[0].axvline(x=sample//stride, color='r', linestyle='--')
-ax[0].axvline(x=gts_starts[n_trace][0]//stride, color='r', linestyle='--', label='Start GT')
-ax[0].legend(loc='lower right', bbox_to_anchor=(1, 0.95))
+    for sample in gts_starts[n_trace][1:]:
+        ax[0].axvline(x=sample//stride, color='r', linestyle='--')
+    ax[0].axvline(x=gts_starts[n_trace][0]//stride, color='r', linestyle='--', label='Start GT')
+    ax[0].legend(loc='lower right', bbox_to_anchor=(1, 0.95))
 
-ax[1].set_xlim(lim)
-for sample in ends[n_trace][1:]:
-    ax[1].axvline(x=sample, color='grey', linestyle='-')
-ax[1].axvline(x=ends[n_trace][0], color='grey', linestyle='-', label="Found CO's end")
+    ax[1].set_xlim(lim)
+    for sample in ends[n_trace][1:]:
+        ax[1].axvline(x=sample, color='grey', linestyle='-')
+    ax[1].axvline(x=ends[n_trace][0], color='grey', linestyle='-', label="Found CO's end")
 
-for sample in gts_ends[n_trace][1:]:
-    ax[1].axvline(x=sample//stride, color='y', linestyle='--')
-ax[1].axvline(x=gts_ends[n_trace][0]//stride, color='y', linestyle='--', label='End GT')
-ax[1].legend(loc='lower right', bbox_to_anchor=(1, 0.95))
+    for sample in gts_ends[n_trace][1:]:
+        ax[1].axvline(x=sample//stride, color='y', linestyle='--')
+    ax[1].axvline(x=gts_ends[n_trace][0]//stride, color='y', linestyle='--', label='End GT')
+    ax[1].legend(loc='lower right', bbox_to_anchor=(1, 0.95))
 
-ax[2].set_xlim(lim)
-ax[2].plot(np.argmax(classifications[n_trace], axis=1))
+    ax[2].set_xlim(lim)
+    ax[2].plot(np.argmax(classifications[n_trace], axis=1))
 
-# # Save figure
-# output_file = os.path.join(plot_output_dir, f"trace_{n_trace}_visualization.png")
-# fig.savefig(output_file, dpi=300, bbox_inches='tight')
-# plt.close(fig)
+    # # Save figure
+    # output_file = os.path.join(plot_output_dir, f"trace_{n_trace}_visualization.png")
+    # fig.savefig(output_file, dpi=300, bbox_inches='tight')
+    # plt.close(fig)
 
-# print(f"Visualization saved to: {output_file}")
-# print(f"End! Results in: {dataset_out_path}")
+    # print(f"Visualization saved to: {output_file}")
+    # print(f"End! Results in: {dataset_out_path}")
 
-# Save figure as PNG and PDF
-plot_output_file = os.path.join(plot_output_dir, f"trace_{n_trace}_visualization")
+    # Save figure as PNG and PDF
+    plot_output_file = os.path.join(plot_output_dir, f"trace_{n_trace}_visualization")
 
-fig.savefig(f"{plot_output_file}.png", dpi=300, bbox_inches='tight')
-fig.savefig(f"{plot_output_file}.pdf", bbox_inches='tight')
+    fig.savefig(f"{plot_output_file}.png", dpi=300, bbox_inches='tight')
+    fig.savefig(f"{plot_output_file}.pdf", bbox_inches='tight')
 
-plt.close(fig)
+    plt.close(fig)
 
 print(f"Visualizations saved to: {plot_output_file}.png and {plot_output_file}.pdf")
 print(f"End! Results in: {dataset_out_path}")
