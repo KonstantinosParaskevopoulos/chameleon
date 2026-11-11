@@ -8,82 +8,81 @@ from .segmentation import majorityFilter
 import numpy as np
 
 
+#def removeFalsePositives_basic(COstarts: list, COends: list) -> tuple:
+#    '''
+#    Remove false positives from identified COs.
+#    This is a basic and simple implemantation of the algorithm, for 
+#    a more robust implemention ses "removeFalsePositives()"
+#
+#    Parameters
+#    -----------
+#    COstarts : list
+#        List of start points of the COs.
+#    COends : list
+#        List of end points of the COs.
+#
+#    Returns
+#    
+#    
+#    -------
+#    list
+#        List of start points of the COs after removing false positives.
+#    list
+#        List of end points of the COs after removing false positives.
+#    '''
+#
+#    starts, ends = [], []
+#    i, j = 0, 0
+#    while i < len(COstarts)-1 and j < len(COends)-1:
+#        starts.append(COstarts[i])
+#        if COstarts[i] < COends[j] and \
+#                COstarts[i+1] >= COends[j]:
+#            i += 1
+#        else:
+#            i += 2
+#        ends.append(COends[j])
+#        if COstarts[i] >= COends[j] and \
+#                COstarts[i] < COends[j+1]:
+#            j += 1
+#        else:
+#            j += 2
+#
+#    starts.extend(COstarts[i:])
+#    ends.extend(COends[j:])
+#    return starts, ends
+
 def removeFalsePositives_basic(COstarts: list, COends: list) -> tuple:
-    '''
+    """
     Remove false positives from identified COs.
-    This is a basic and simple implemantation of the algorithm, for 
-    a more robust implemention ses "removeFalsePositives()"
-
-    Parameters
-    -----------
-    COstarts : list
-        List of start points of the COs.
-    COends : list
-        List of end points of the COs.
-
-    Returns
-    
-    
-    -------
-    list
-        List of start points of the COs after removing false positives.
-    list
-        List of end points of the COs after removing false positives.
-    '''
-
+    """
     starts, ends = [], []
     i, j = 0, 0
-    while i < len(COstarts)-1 and j < len(COends)-1:
+
+    while i < len(COstarts) and j < len(COends):
+
         starts.append(COstarts[i])
-        if COstarts[i] < COends[j] and \
-                COstarts[i+1] >= COends[j]:
+
+        if (i + 1 < len(COstarts)
+                and COstarts[i] < COends[j]
+                and COstarts[i + 1] >= COends[j]):
             i += 1
         else:
             i += 2
+
         ends.append(COends[j])
-        if COstarts[i] >= COends[j] and \
-                COstarts[i] < COends[j+1]:
+
+        if (i < len(COstarts)
+                and j + 1 < len(COends)
+                and COstarts[i] >= COends[j]
+                and COstarts[i] < COends[j + 1]):
             j += 1
         else:
             j += 2
 
     starts.extend(COstarts[i:])
     ends.extend(COends[j:])
+
     return starts, ends
-
-# def removeFalsePositives_basic(COstarts: list, COends: list) -> tuple:
-#     """
-#     Remove false positives from identified COs.
-#     """
-
-#     starts, ends = [], []
-#     i, j = 0, 0
-
-#     while i < len(COstarts) and j < len(COends):
-
-#         starts.append(COstarts[i])
-
-#         if (i + 1 < len(COstarts)
-#                 and COstarts[i] < COends[j]
-#                 and COstarts[i + 1] >= COends[j]):
-#             i += 1
-#         else:
-#             i += 2
-
-#         ends.append(COends[j])
-
-#         if (i < len(COstarts)
-#                 and j + 1 < len(COends)
-#                 and COstarts[i] >= COends[j]
-#                 and COstarts[i] < COends[j + 1]):
-#             j += 1
-#         else:
-#             j += 2
-
-#     starts.extend(COstarts[i:])
-#     ends.extend(COends[j:])
-
-#     return starts, ends
 
 
 def removeFalsePositives(COstarts: list, COends: list, classification: np.ndarray) -> tuple:
