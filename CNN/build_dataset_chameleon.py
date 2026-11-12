@@ -89,14 +89,27 @@ def _getRandomRounds(all_traces, n_win, win_width, start=0):
 #         rounds.append(noise_trace[start_cut:start_cut+win_width])
 #     return rounds
 
+# def _getNoiseRounds(noise_traces, n_win, win_width):
+#     rounds = []
+
+#     selected_traces = random.sample(
+#         noise_traces, min(n_win, len(noise_traces))
+#     )
+
+#     for noise_trace in selected_traces:
+#         max_start = len(noise_trace) - win_width
+#         start_cut = random.randint(0, max_start)
+
+#         rounds.append(noise_trace[start_cut:start_cut + win_width])
+
+#     return rounds
+
 def _getNoiseRounds(noise_traces, n_win, win_width):
     rounds = []
 
-    selected_traces = random.sample(
-        noise_traces, min(n_win, len(noise_traces))
-    )
+    noise_traces = random.sample(noise_traces, n_win)
 
-    for noise_trace in selected_traces:
+    for noise_trace in noise_traces:
         max_start = len(noise_trace) - win_width
         start_cut = random.randint(0, max_start)
 
@@ -105,16 +118,25 @@ def _getNoiseRounds(noise_traces, n_win, win_width):
     return rounds
 
 
+# def _validNoiseRounds(noise_traces, win_width):
+#     valid_traces = []
+#     for trace in noise_traces:
+#         if len(trace) >= win_width:
+#             valid_traces.append(trace)
+#     #print(f"\n[DEBUG] Number of noise candidates: {len(valid_traces)}") #Debug
+#     #print(f"[DEBUG] Requested window size: {win_width}")                #Debug
+#     #assert len(valid_traces) > 0, "No valid noise traces found" #This assertion fails, in cases where no region is BIGGER THAN the window size
+#     if len(valid_traces) == 0:
+#         return []
+#     return valid_traces
+
 def _validNoiseRounds(noise_traces, win_width):
     valid_traces = []
+
     for trace in noise_traces:
         if len(trace) >= win_width:
             valid_traces.append(trace)
-    #print(f"\n[DEBUG] Number of noise candidates: {len(valid_traces)}") #Debug
-    #print(f"[DEBUG] Requested window size: {win_width}")                #Debug
-    #assert len(valid_traces) > 0, "No valid noise traces found" #This assertion fails, in cases where no region is BIGGER THAN the window size
-    if len(valid_traces) == 0:
-        return []
+
     return valid_traces
 
 
@@ -131,8 +153,32 @@ def _validNoiseRounds(noise_traces, win_width):
 #     npa_tar.append(np.array([0]*len(other_rounds), dtype=np.uint8))
 #     npa_tar.append(np.array([2]*len(noise_rounds), dtype=np.uint8))
 
-def _appendDataset(npa_set: NpyAppendArray, npa_tar: NpyAppendArray,
-                   first_rounds, second_rounds, other_rounds, noise_rounds):    #New version to avoid fails
+# def _appendDataset(npa_set: NpyAppendArray, npa_tar: NpyAppendArray,
+#                    first_rounds, second_rounds, other_rounds, noise_rounds):    #New version to avoid fails
+
+#     rounds = [
+#         (first_rounds, 1),
+#         (second_rounds, 0),
+#         (other_rounds, 0),
+#         (noise_rounds, 2)
+#     ]
+
+#     for data, label in rounds:
+#         if len(data) == 0:
+#             continue
+
+#         data = np.asarray(data)
+#         targets = np.full(len(data), label, dtype=np.uint8)
+
+#         npa_set.append(data)
+#         npa_tar.append(targets)
+
+def _appendDataset(npa_set: NpyAppendArray,
+                   npa_tar: NpyAppendArray,
+                   first_rounds,
+                   second_rounds,
+                   other_rounds,
+                   noise_rounds):
 
     rounds = [
         (first_rounds, 1),
@@ -168,12 +214,39 @@ def _appendDataset(npa_set: NpyAppendArray, npa_tar: NpyAppendArray,
 
 #     return traces_cut, noise_cut
 
+# def _cutCOs(trace, sample_labels):
+#     traces_cut = []
+#     noise_cut = []
+
+#     # Noise before the first CO
+#     if sample_labels:
+#         if sample_labels[0]['start'] > 0:
+#             noise_cut.append(trace[:sample_labels[0]['start']])
+
+#     for i in range(len(sample_labels) - 1):
+#         pins = sample_labels[i]
+#         next_pins = sample_labels[i + 1]
+
+#         traces_cut.append(trace[pins['start']:pins['end']])
+#         noise_cut.append(trace[pins['end']:next_pins['start']])
+
+#     # Handle the last CO and trailing noise
+#     if sample_labels:
+#         last_pins = sample_labels[-1]
+
+#         traces_cut.append(trace[last_pins['start']:last_pins['end']])
+
+#         if last_pins['end'] < len(trace):
+#             noise_cut.append(trace[last_pins['end']:])
+
+#     return traces_cut, noise_cut
+
 def _cutCOs(trace, sample_labels):
     traces_cut = []
     noise_cut = []
 
-    # Noise before the first CO
     if sample_labels:
+        # Noise before the first CO
         if sample_labels[0]['start'] > 0:
             noise_cut.append(trace[:sample_labels[0]['start']])
 
@@ -205,6 +278,181 @@ def _dataLoader(chunk_files):
                 traces = highpass(traces)
                 yield traces, labels
 
+def getSplitCounts(n, category, split_counts, split_traces):
+    previous = split_counts[category]
+    current = previous + n
+
+    train_fraction = split_traces
+    valid_fraction = (1 - split_traces) / 2
+
+    train_count = (
+        int(current * train_fraction)
+        - int(previous * train_fraction)
+    )
+
+    train_valid_fraction = train_fraction + valid_fraction
+
+    train_valid_count = (
+        int(current * train_valid_fraction)
+        - int(previous * train_valid_fraction)
+    )
+
+    valid_count = train_valid_count - train_count
+    test_count = n - train_count - valid_count
+
+    split_counts[category] = current
+
+    return train_count, valid_count, test_count
+
+# def createSubsets(dataset_dir: str,
+#                   out_data_dir: str,
+#                   window_size: int = 10_000,
+#                   split_traces: float = 0.8):
+#     '''
+#     Create subsets for training and testing a CNN from the Chameleon dataset.
+
+#     Parameters
+#     ----------
+#     `dataset_dir` : str
+#         Path to the Chameleon dataset.
+#     `out_data_dir` : str
+#         Path to the output directory.
+#     `window_size` : int, optional
+#         Size of the window in sample (default is 500).
+#     `split_traces` : float, optional
+#         The proportion of traces to use for training (default is 0.8).
+#     '''
+
+#     # Get all traces files ----------------------
+#     traces_files = _getFilePathes(dataset_dir)
+#     # -------------------------------------------------------------------------------------------------------------
+#     if not os.path.exists(out_data_dir):
+#         os.makedirs(out_data_dir)
+#     # -------------------------------------------
+
+#     train_set_path = os.path.join(out_data_dir, 'train_set.npy')
+#     train_tar_path = os.path.join(out_data_dir, 'train_labels.npy')
+#     valid_set_path = os.path.join(out_data_dir, 'valid_set.npy')
+#     valid_tar_path = os.path.join(out_data_dir, 'valid_labels.npy')
+#     test_set_path = os.path.join(out_data_dir, 'test_set.npy')
+#     test_tar_path = os.path.join(out_data_dir, 'test_labels.npy')
+
+#     with NpyAppendArray(train_set_path, delete_if_exists=True) as npa_train_set, \
+#             NpyAppendArray(train_tar_path, delete_if_exists=True) as npa_train_tar,  \
+#             NpyAppendArray(valid_set_path, delete_if_exists=True) as npa_valid_set,  \
+#             NpyAppendArray(valid_tar_path, delete_if_exists=True) as npa_valid_tar,  \
+#             NpyAppendArray(test_set_path, delete_if_exists=True) as npa_test_set,    \
+#             NpyAppendArray(test_tar_path, delete_if_exists=True) as npa_test_tar:
+#         total_noise_windows = 0
+#         traces_without_noise = 0
+#         dataLoader = _dataLoader(traces_files)
+#         #for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*16), desc="Creating dataset"):
+#         for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*13127), desc="Creating dataset"):
+#             # Cut traces --------------------------------------------------------------------------------------------
+#             # Cut idling parts from traces
+#             # all_traces, all_noises = _cutCOs(all_traces, sample_labels)
+#             # # all_noises = _validNoiseRounds(all_noises, window_size) #Original
+#             # valid_noises = _validNoiseRounds(all_noises, window_size)
+
+#             # if valid_noises:
+#             #     all_noises = valid_noises
+#             # else:
+#             #     all_noises = []
+
+#             all_traces, all_noises = _cutCOs(all_traces, sample_labels)#AI Added this
+#             all_noises = _validNoiseRounds(all_noises, window_size)#AI Added this
+
+#             if len(all_noises) == 0:#AI Added this
+#                 traces_without_noise += 1#AI Added this
+
+#             N_WIN_FIRST = min(len(all_traces), len(all_noises))
+#             N_WIN_SECOND = min(len(all_traces), len(all_noises)) // 2
+#             N_WIN_OTHER = min(len(all_traces), len(all_noises)) // 2
+#             N_WIN_NOISE = min(len(all_traces), len(all_noises))
+#             # print(f"First: {N_WIN_FIRST} - Second: {N_WIN_SECOND} - Other: {N_WIN_OTHER} - Noise: {N_WIN_NOISE}")
+#             total_noise_windows += N_WIN_NOISE #AI Added this
+
+#             n_first_round_train = round(N_WIN_FIRST*split_traces)
+#             n_second_round_train = round(N_WIN_SECOND*split_traces)
+#             n_other_round_train = round(N_WIN_OTHER*split_traces)
+#             n_noise_round_train = round(N_WIN_NOISE*split_traces)
+
+#             n_first_round_valid = round(N_WIN_FIRST*(1-split_traces)/2)
+#             n_second_round_valid = round(N_WIN_SECOND*(1-split_traces)/2)
+#             n_other_round_valid = round(N_WIN_OTHER*(1-split_traces)/2)
+#             n_noise_round_valid = round(N_WIN_NOISE*(1-split_traces)/2)
+#             # -------------------------------------------------------------------------------------------------------
+
+#             # Get first round of AES
+#             first_rounds = _getOrderRounds(
+#                 all_traces, N_WIN_FIRST, window_size)
+
+#             # Get second round of AES
+#             second_rounds = _getOrderRounds(
+#                 all_traces, N_WIN_SECOND, window_size, window_size)
+
+#             # Get other parts of AES
+#             start = 2*window_size if N_WIN_SECOND > 0 else window_size
+#             other_rounds = _getRandomRounds(
+#                 all_traces, N_WIN_OTHER, window_size, start=start)
+
+#             # Get noise
+#             noise_rounds = _getNoiseRounds(
+#                 all_noises, N_WIN_NOISE, window_size)
+#             # ----------------------------------------------------------------------------------------------------------
+
+#             # Incrementally build dataset
+#             # Train set ------------------------------------------------------------------------------------------------
+#             _appendDataset(npa_train_set, npa_train_tar,
+#                            first_rounds[:n_first_round_train],
+#                            second_rounds[:n_second_round_train],
+#                            other_rounds[:n_other_round_train],
+#                            noise_rounds[:n_noise_round_train])
+
+#             # Validation set -------------------------------------------------------------------------------------------
+#             _appendDataset(npa_valid_set, npa_valid_tar,
+#                            first_rounds[n_first_round_train:n_first_round_train +
+#                                         n_first_round_valid],
+#                            second_rounds[n_second_round_train:n_second_round_train +
+#                                          n_second_round_valid],
+#                            other_rounds[n_other_round_train:n_other_round_train +
+#                                         n_other_round_valid],
+#                            noise_rounds[n_noise_round_train:n_noise_round_train+n_noise_round_valid])
+
+#             # Test set -------------------------------------------------------------------------------------------
+#             _appendDataset(npa_test_set, npa_test_tar,
+#                            first_rounds[n_first_round_train +
+#                                         n_first_round_valid:N_WIN_FIRST],
+#                            second_rounds[n_second_round_train +
+#                                          n_second_round_valid:N_WIN_SECOND],
+#                            other_rounds[n_other_round_train +
+#                                         n_other_round_valid:N_WIN_OTHER],
+#                            noise_rounds[n_noise_round_train+n_noise_round_valid:N_WIN_NOISE])
+        
+#         if total_noise_windows == 0:
+#             raise ValueError("No valid noise windows found across the entire dataset.") #AI Added this
+#         # _writeConfig(out_data_dir,
+#         #              npa_train_set.shape,
+#         #              npa_valid_set.shape,
+#         #              npa_test_set.shape,
+#         #              N_WIN_FIRST,
+#         #              N_WIN_SECOND,
+#         #              N_WIN_OTHER,
+#         #              N_WIN_NOISE,
+#         #              "0.01")
+#         train_shape = np.load(train_set_path, mmap_mode="r").shape
+#         valid_shape = np.load(valid_set_path, mmap_mode="r").shape
+#         test_shape = np.load(test_set_path, mmap_mode="r").shape
+
+#         _writeConfig(out_data_dir,
+#                      train_shape,
+#                      valid_shape,
+#                      test_shape,
+#                      N_WIN_FIRST,
+#                      N_WIN_SECOND,
+#                      N_WIN_OTHER,
+#                      N_WIN_NOISE,
+#                      "0.01")
 
 def createSubsets(dataset_dir: str,
                   out_data_dir: str,
@@ -215,22 +463,21 @@ def createSubsets(dataset_dir: str,
 
     Parameters
     ----------
-    `dataset_dir` : str
+    dataset_dir : str
         Path to the Chameleon dataset.
-    `out_data_dir` : str
+    out_data_dir : str
         Path to the output directory.
-    `window_size` : int, optional
-        Size of the window in sample (default is 500).
-    `split_traces` : float, optional
-        The proportion of traces to use for training (default is 0.8).
+    window_size : int, optional
+        Size of the window in samples (default is 10000).
+    split_traces : float, optional
+        Proportion of windows to use for training (default is 0.8).
     '''
 
-    # Get all traces files ----------------------
+    # Get all traces files
     traces_files = _getFilePathes(dataset_dir)
-    # -------------------------------------------------------------------------------------------------------------
+
     if not os.path.exists(out_data_dir):
         os.makedirs(out_data_dir)
-    # -------------------------------------------
 
     train_set_path = os.path.join(out_data_dir, 'train_set.npy')
     train_tar_path = os.path.join(out_data_dir, 'train_labels.npy')
@@ -239,51 +486,64 @@ def createSubsets(dataset_dir: str,
     test_set_path = os.path.join(out_data_dir, 'test_set.npy')
     test_tar_path = os.path.join(out_data_dir, 'test_labels.npy')
 
+    # Cumulative split counters
+    split_counts = {
+        "first": 0,
+        "second": 0,
+        "other": 0,
+        "noise": 0
+    }
+
     with NpyAppendArray(train_set_path, delete_if_exists=True) as npa_train_set, \
-            NpyAppendArray(train_tar_path, delete_if_exists=True) as npa_train_tar,  \
-            NpyAppendArray(valid_set_path, delete_if_exists=True) as npa_valid_set,  \
-            NpyAppendArray(valid_tar_path, delete_if_exists=True) as npa_valid_tar,  \
-            NpyAppendArray(test_set_path, delete_if_exists=True) as npa_test_set,    \
+            NpyAppendArray(train_tar_path, delete_if_exists=True) as npa_train_tar, \
+            NpyAppendArray(valid_set_path, delete_if_exists=True) as npa_valid_set, \
+            NpyAppendArray(valid_tar_path, delete_if_exists=True) as npa_valid_tar, \
+            NpyAppendArray(test_set_path, delete_if_exists=True) as npa_test_set, \
             NpyAppendArray(test_tar_path, delete_if_exists=True) as npa_test_tar:
+
         total_noise_windows = 0
         traces_without_noise = 0
+
         dataLoader = _dataLoader(traces_files)
-        #for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*16), desc="Creating dataset"):
-        for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*13127), desc="Creating dataset"):
-            # Cut traces --------------------------------------------------------------------------------------------
-            # Cut idling parts from traces
-            # all_traces, all_noises = _cutCOs(all_traces, sample_labels)
-            # # all_noises = _validNoiseRounds(all_noises, window_size) #Original
-            # valid_noises = _validNoiseRounds(all_noises, window_size)
 
-            # if valid_noises:
-            #     all_noises = valid_noises
-            # else:
-            #     all_noises = []
+        for all_traces, sample_labels in tqdm(
+                dataLoader,
+                total=len(traces_files * 13127),
+                desc="Creating dataset"):
 
-            all_traces, all_noises = _cutCOs(all_traces, sample_labels)#AI Added this
-            all_noises = _validNoiseRounds(all_noises, window_size)#AI Added this
+            # Cut COs and noise regions
+            all_traces, all_noises = _cutCOs(all_traces, sample_labels)
 
-            if len(all_noises) == 0:#AI Added this
-                traces_without_noise += 1#AI Added this
+            # Keep only noise regions that can provide a complete window
+            all_noises = _validNoiseRounds(all_noises, window_size)
 
+            if len(all_noises) == 0:
+                traces_without_noise += 1
+
+            # Determine number of windows
             N_WIN_FIRST = min(len(all_traces), len(all_noises))
             N_WIN_SECOND = min(len(all_traces), len(all_noises)) // 2
             N_WIN_OTHER = min(len(all_traces), len(all_noises)) // 2
             N_WIN_NOISE = min(len(all_traces), len(all_noises))
-            # print(f"First: {N_WIN_FIRST} - Second: {N_WIN_SECOND} - Other: {N_WIN_OTHER} - Noise: {N_WIN_NOISE}")
-            total_noise_windows += N_WIN_NOISE #AI Added this
 
-            n_first_round_train = round(N_WIN_FIRST*split_traces)
-            n_second_round_train = round(N_WIN_SECOND*split_traces)
-            n_other_round_train = round(N_WIN_OTHER*split_traces)
-            n_noise_round_train = round(N_WIN_NOISE*split_traces)
+            total_noise_windows += N_WIN_NOISE
 
-            n_first_round_valid = round(N_WIN_FIRST*(1-split_traces)/2)
-            n_second_round_valid = round(N_WIN_SECOND*(1-split_traces)/2)
-            n_other_round_valid = round(N_WIN_OTHER*(1-split_traces)/2)
-            n_noise_round_valid = round(N_WIN_NOISE*(1-split_traces)/2)
-            # -------------------------------------------------------------------------------------------------------
+            # Calculate cumulative split counts
+            n_first_round_train, n_first_round_valid, n_first_round_test = \
+                getSplitCounts(
+                    N_WIN_FIRST, "first", split_counts, split_traces)
+
+            n_second_round_train, n_second_round_valid, n_second_round_test = \
+                getSplitCounts(
+                    N_WIN_SECOND, "second", split_counts, split_traces)
+
+            n_other_round_train, n_other_round_valid, n_other_round_test = \
+                getSplitCounts(
+                    N_WIN_OTHER, "other", split_counts, split_traces)
+
+            n_noise_round_train, n_noise_round_valid, n_noise_round_test = \
+                getSplitCounts(
+                    N_WIN_NOISE, "noise", split_counts, split_traces)
 
             # Get first round of AES
             first_rounds = _getOrderRounds(
@@ -294,64 +554,95 @@ def createSubsets(dataset_dir: str,
                 all_traces, N_WIN_SECOND, window_size, window_size)
 
             # Get other parts of AES
-            start = 2*window_size if N_WIN_SECOND > 0 else window_size
+            start = 2 * window_size if N_WIN_SECOND > 0 else window_size
+
             other_rounds = _getRandomRounds(
                 all_traces, N_WIN_OTHER, window_size, start=start)
 
             # Get noise
             noise_rounds = _getNoiseRounds(
                 all_noises, N_WIN_NOISE, window_size)
-            # ----------------------------------------------------------------------------------------------------------
 
-            # Incrementally build dataset
-            # Train set ------------------------------------------------------------------------------------------------
-            _appendDataset(npa_train_set, npa_train_tar,
-                           first_rounds[:n_first_round_train],
-                           second_rounds[:n_second_round_train],
-                           other_rounds[:n_other_round_train],
-                           noise_rounds[:n_noise_round_train])
+            # Training set
+            _appendDataset(
+                npa_train_set,
+                npa_train_tar,
+                first_rounds[:n_first_round_train],
+                second_rounds[:n_second_round_train],
+                other_rounds[:n_other_round_train],
+                noise_rounds[:n_noise_round_train]
+            )
 
-            # Validation set -------------------------------------------------------------------------------------------
-            _appendDataset(npa_valid_set, npa_valid_tar,
-                           first_rounds[n_first_round_train:n_first_round_train +
-                                        n_first_round_valid],
-                           second_rounds[n_second_round_train:n_second_round_train +
-                                         n_second_round_valid],
-                           other_rounds[n_other_round_train:n_other_round_train +
-                                        n_other_round_valid],
-                           noise_rounds[n_noise_round_train:n_noise_round_train+n_noise_round_valid])
+            # Validation set
+            _appendDataset(
+                npa_valid_set,
+                npa_valid_tar,
+                first_rounds[
+                    n_first_round_train:
+                    n_first_round_train + n_first_round_valid
+                ],
+                second_rounds[
+                    n_second_round_train:
+                    n_second_round_train + n_second_round_valid
+                ],
+                other_rounds[
+                    n_other_round_train:
+                    n_other_round_train + n_other_round_valid
+                ],
+                noise_rounds[
+                    n_noise_round_train:
+                    n_noise_round_train + n_noise_round_valid
+                ]
+            )
 
-            # Test set -------------------------------------------------------------------------------------------
-            _appendDataset(npa_test_set, npa_test_tar,
-                           first_rounds[n_first_round_train +
-                                        n_first_round_valid:N_WIN_FIRST],
-                           second_rounds[n_second_round_train +
-                                         n_second_round_valid:N_WIN_SECOND],
-                           other_rounds[n_other_round_train +
-                                        n_other_round_valid:N_WIN_OTHER],
-                           noise_rounds[n_noise_round_train+n_noise_round_valid:N_WIN_NOISE])
-        
+            # Test set
+            _appendDataset(
+                npa_test_set,
+                npa_test_tar,
+                first_rounds[
+                    n_first_round_train + n_first_round_valid:
+                    n_first_round_train + n_first_round_valid + n_first_round_test
+                ],
+                second_rounds[
+                    n_second_round_train + n_second_round_valid:
+                    n_second_round_train + n_second_round_valid + n_second_round_test
+                ],
+                other_rounds[
+                    n_other_round_train + n_other_round_valid:
+                    n_other_round_train + n_other_round_valid + n_other_round_test
+                ],
+                noise_rounds[
+                    n_noise_round_train + n_noise_round_valid:
+                    n_noise_round_train + n_noise_round_valid + n_noise_round_test
+                ]
+            )
+
         if total_noise_windows == 0:
-            raise ValueError("No valid noise windows found across the entire dataset.") #AI Added this
-        # _writeConfig(out_data_dir,
-        #              npa_train_set.shape,
-        #              npa_valid_set.shape,
-        #              npa_test_set.shape,
-        #              N_WIN_FIRST,
-        #              N_WIN_SECOND,
-        #              N_WIN_OTHER,
-        #              N_WIN_NOISE,
-        #              "0.01")
+            raise ValueError(
+                "No valid noise windows found across the entire dataset."
+            )
+
+        # Load generated dataset shapes
         train_shape = np.load(train_set_path, mmap_mode="r").shape
         valid_shape = np.load(valid_set_path, mmap_mode="r").shape
         test_shape = np.load(test_set_path, mmap_mode="r").shape
 
-        _writeConfig(out_data_dir,
-                     train_shape,
-                     valid_shape,
-                     test_shape,
-                     N_WIN_FIRST,
-                     N_WIN_SECOND,
-                     N_WIN_OTHER,
-                     N_WIN_NOISE,
-                     "0.01")
+        print(f"\nTraining dataset:   {train_shape}")
+        print(f"Validation dataset: {valid_shape}")
+        print(f"Testing dataset:    {test_shape}")
+
+        print(f"\nTraces without valid noise: {traces_without_noise}")
+        print(f"Total available noise windows: {total_noise_windows}")
+
+        # Write configuration
+        _writeConfig(
+            out_data_dir,
+            train_shape,
+            valid_shape,
+            test_shape,
+            N_WIN_FIRST,
+            N_WIN_SECOND,
+            N_WIN_OTHER,
+            N_WIN_NOISE,
+            "0.01"
+        )
