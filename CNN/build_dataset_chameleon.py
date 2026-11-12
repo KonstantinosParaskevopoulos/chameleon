@@ -78,15 +78,30 @@ def _getRandomRounds(all_traces, n_win, win_width, start=0):
     return rounds
 
 
+# def _getNoiseRounds(noise_traces, n_win, win_width):
+#     rounds = []
+#     noise_traces = random.sample(noise_traces, n_win)
+#     for noise_trace in noise_traces:
+#         if len(noise_trace)-win_width == 0:
+#             start_cut = 0
+#         else:
+#             start_cut = random.sample(range(len(noise_trace)-win_width), 1)[0]
+#         rounds.append(noise_trace[start_cut:start_cut+win_width])
+#     return rounds
+
 def _getNoiseRounds(noise_traces, n_win, win_width):
     rounds = []
-    noise_traces = random.sample(noise_traces, n_win)
-    for noise_trace in noise_traces:
-        if len(noise_trace)-win_width == 0:
-            start_cut = 0
-        else:
-            start_cut = random.sample(range(len(noise_trace)-win_width), 1)[0]
-        rounds.append(noise_trace[start_cut:start_cut+win_width])
+
+    selected_traces = random.sample(
+        noise_traces, min(n_win, len(noise_traces))
+    )
+
+    for noise_trace in selected_traces:
+        max_start = len(noise_trace) - win_width
+        start_cut = random.randint(0, max_start)
+
+        rounds.append(noise_trace[start_cut:start_cut + win_width])
+
     return rounds
 
 
@@ -137,22 +152,48 @@ def _appendDataset(npa_set: NpyAppendArray, npa_tar: NpyAppendArray,
         npa_tar.append(targets)
 
 
+# def _cutCOs(trace, sample_labels):
+#     traces_cut = []
+#     noise_cut = []
+#     for i in range(len(sample_labels) - 1):
+#         pins = sample_labels[i]
+#         next_pins = sample_labels[i + 1]
+#         traces_cut.append(trace[pins['start']:pins['end']])
+#         noise_cut.append(trace[pins['end']:next_pins['start']])
+#     # Handle the last segment if necessary
+#     if sample_labels and sample_labels[-1]['end'] < 134_217_550:
+#         last_pins = sample_labels[-1]
+#         traces_cut.append(trace[last_pins['start']:last_pins['end']])
+#         noise_cut.append(trace[last_pins['end']:])
+
+#     return traces_cut, noise_cut
+
 def _cutCOs(trace, sample_labels):
     traces_cut = []
     noise_cut = []
+
+    # Noise before the first CO
+    if sample_labels:
+        if sample_labels[0]['start'] > 0:
+            noise_cut.append(trace[:sample_labels[0]['start']])
+
     for i in range(len(sample_labels) - 1):
         pins = sample_labels[i]
         next_pins = sample_labels[i + 1]
+
         traces_cut.append(trace[pins['start']:pins['end']])
         noise_cut.append(trace[pins['end']:next_pins['start']])
-    # Handle the last segment if necessary
-    if sample_labels and sample_labels[-1]['end'] < 134_217_550:
+
+    # Handle the last CO and trailing noise
+    if sample_labels:
         last_pins = sample_labels[-1]
+
         traces_cut.append(trace[last_pins['start']:last_pins['end']])
-        noise_cut.append(trace[last_pins['end']:])
+
+        if last_pins['end'] < len(trace):
+            noise_cut.append(trace[last_pins['end']:])
 
     return traces_cut, noise_cut
-
 
 def _dataLoader(chunk_files):
     for chunk in chunk_files:
