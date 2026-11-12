@@ -103,18 +103,38 @@ def _validNoiseRounds(noise_traces, win_width):
     return valid_traces
 
 
+# def _appendDataset(npa_set: NpyAppendArray, npa_tar: NpyAppendArray,
+#                    first_rounds, second_rounds, other_rounds, noise_rounds):
+
+#     npa_set.append(np.array(first_rounds))
+#     npa_set.append(np.array(second_rounds))
+#     npa_set.append(np.array(other_rounds))
+#     npa_set.append(np.array(noise_rounds))
+
+#     npa_tar.append(np.array([1]*len(first_rounds), dtype=np.uint8))
+#     npa_tar.append(np.array([0]*len(second_rounds), dtype=np.uint8))
+#     npa_tar.append(np.array([0]*len(other_rounds), dtype=np.uint8))
+#     npa_tar.append(np.array([2]*len(noise_rounds), dtype=np.uint8))
+
 def _appendDataset(npa_set: NpyAppendArray, npa_tar: NpyAppendArray,
-                   first_rounds, second_rounds, other_rounds, noise_rounds):
+                   first_rounds, second_rounds, other_rounds, noise_rounds):    #New version to avoid fails
 
-    npa_set.append(np.array(first_rounds))
-    npa_set.append(np.array(second_rounds))
-    npa_set.append(np.array(other_rounds))
-    npa_set.append(np.array(noise_rounds))
+    rounds = [
+        (first_rounds, 1),
+        (second_rounds, 0),
+        (other_rounds, 0),
+        (noise_rounds, 2)
+    ]
 
-    npa_tar.append(np.array([1]*len(first_rounds), dtype=np.uint8))
-    npa_tar.append(np.array([0]*len(second_rounds), dtype=np.uint8))
-    npa_tar.append(np.array([0]*len(other_rounds), dtype=np.uint8))
-    npa_tar.append(np.array([2]*len(noise_rounds), dtype=np.uint8))
+    for data, label in rounds:
+        if len(data) == 0:
+            continue
+
+        data = np.asarray(data)
+        targets = np.full(len(data), label, dtype=np.uint8)
+
+        npa_set.append(data)
+        npa_tar.append(targets)
 
 
 def _cutCOs(trace, sample_labels):
