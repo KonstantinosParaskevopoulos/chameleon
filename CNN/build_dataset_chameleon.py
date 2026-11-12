@@ -95,7 +95,11 @@ def _validNoiseRounds(noise_traces, win_width):
     for trace in noise_traces:
         if len(trace) >= win_width:
             valid_traces.append(trace)
-    assert len(valid_traces) > 0, "No valid noise traces found"
+    #print(f"\n[DEBUG] Number of noise candidates: {len(valid_traces)}") #Debug
+    #print(f"[DEBUG] Requested window size: {win_width}")                #Debug
+    #assert len(valid_traces) > 0, "No valid noise traces found" #This assertion fails, in cases where no region is BIGGER THAN the window size
+    if len(valid_traces) == 0:
+        return []
     return valid_traces
 
 
@@ -180,20 +184,34 @@ def createSubsets(dataset_dir: str,
             NpyAppendArray(valid_tar_path, delete_if_exists=True) as npa_valid_tar,  \
             NpyAppendArray(test_set_path, delete_if_exists=True) as npa_test_set,    \
             NpyAppendArray(test_tar_path, delete_if_exists=True) as npa_test_tar:
-
+        total_noise_windows = 0
+        traces_without_noise = 0
         dataLoader = _dataLoader(traces_files)
         #for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*16), desc="Creating dataset"):
-        for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*16), desc="Creating dataset"):
+        for all_traces, sample_labels in tqdm(dataLoader, total=len(traces_files*13127), desc="Creating dataset"):
             # Cut traces --------------------------------------------------------------------------------------------
             # Cut idling parts from traces
-            all_traces, all_noises = _cutCOs(all_traces, sample_labels)
-            all_noises = _validNoiseRounds(all_noises, window_size)
+            # all_traces, all_noises = _cutCOs(all_traces, sample_labels)
+            # # all_noises = _validNoiseRounds(all_noises, window_size) #Original
+            # valid_noises = _validNoiseRounds(all_noises, window_size)
+
+            # if valid_noises:
+            #     all_noises = valid_noises
+            # else:
+            #     all_noises = []
+
+            all_traces, all_noises = _cutCOs(all_traces, sample_labels)#AI Added this
+            all_noises = _validNoiseRounds(all_noises, window_size)#AI Added this
+
+            if len(all_noises) == 0:#AI Added this
+                traces_without_noise += 1#AI Added this
 
             N_WIN_FIRST = min(len(all_traces), len(all_noises))
             N_WIN_SECOND = min(len(all_traces), len(all_noises)) // 2
             N_WIN_OTHER = min(len(all_traces), len(all_noises)) // 2
             N_WIN_NOISE = min(len(all_traces), len(all_noises))
             # print(f"First: {N_WIN_FIRST} - Second: {N_WIN_SECOND} - Other: {N_WIN_OTHER} - Noise: {N_WIN_NOISE}")
+            total_noise_windows += N_WIN_NOISE #AI Added this
 
             n_first_round_train = round(N_WIN_FIRST*split_traces)
             n_second_round_train = round(N_WIN_SECOND*split_traces)
@@ -251,7 +269,9 @@ def createSubsets(dataset_dir: str,
                            other_rounds[n_other_round_train +
                                         n_other_round_valid:N_WIN_OTHER],
                            noise_rounds[n_noise_round_train+n_noise_round_valid:N_WIN_NOISE])
-
+        
+        if total_noise_windows == 0:
+            raise ValueError("No valid noise windows found across the entire dataset.") #AI Added this
         # _writeConfig(out_data_dir,
         #              npa_train_set.shape,
         #              npa_valid_set.shape,
