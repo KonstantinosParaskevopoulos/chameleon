@@ -1,7 +1,7 @@
 datamodule:
   name: CpClassifierDataModule
   config:
-    dataset_dir:  /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT_2
+    dataset_dir:  /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_IN
     batch_size: 256
     num_workers: 8
     labels:

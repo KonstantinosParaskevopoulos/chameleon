@@ -123,18 +123,18 @@ print(f"Total end mean FPR: {round(np.mean(fprs_e)*100,2)}%")
 print(f"Total end mean FNR: {round(np.mean(fnrs_e)*100,2)}%") 
 
 
-ious_s = []
-ious_e = []
+# ious_s = []
+# ious_e = []
 
-for idx in tqdm(range(len(CPs))):
-    iou_s = IoU(gts_starts[idx], gts_ends[idx], np.asarray(starts[idx]), stride)
-    ious_s.append(iou_s)
+# for idx in tqdm(range(len(CPs))):
+#     iou_s = IoU(gts_starts[idx], gts_ends[idx], np.asarray(starts[idx]), stride)
+#     ious_s.append(iou_s)
 
-    iou_e = IoU(gts_ends[idx], gts_starts[idx], np.asarray(ends[idx]), stride)
-    ious_e.append(iou_e)
+#     iou_e = IoU(gts_ends[idx], gts_starts[idx], np.asarray(ends[idx]), stride)
+#     ious_e.append(iou_e)
 
-print(f"Total start mean IoU: {round(np.mean(ious_s)*100,2)}%")
-#print(f"Total end mean IoU: {round(np.mean(ious_e)*100,2)}%") 
+# print(f"Total start mean IoU: {round(np.mean(ious_s)*100,2)}%")
+# #print(f"Total end mean IoU: {round(np.mean(ious_e)*100,2)}%") 
 
 ##################################################
 # Save Segmentation Results

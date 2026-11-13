@@ -1,0 +1,74 @@
+(/local/scratch/paraskevopoulosk/chameleon) paraskevopoulosk@anton:~/chameleon$ python -m 00_seg_training_chameleon
+/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/lightning_fabric/__init__.py:41: pkg_resources is deprecated as an API. See https:
+//setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this packag
+e or pin to Setuptools<81.
+Start: CNN dataset creation
+Creating dataset: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 13127/13127 [00:55<00:00, 237.42it/s]
+
+Training dataset:   (8339, 10000)
+Validation dataset: (1041, 10000)
+Testing dataset:    (1043, 10000)
+
+Traces without valid noise: 7914
+Total available noise windows: 5213
+Start: CNN training
+Removing previous experiment: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/ResNet_v1_base
+Experiment directory: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/ResNet_v1_base
+Seed set to 314159
+/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/lightning_fabric/plugins/environments/slurm.py:204: The `srun` command is availabl
+e on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python /hom
+e/paraskevopoulosk/chameleon/00_seg_training_cha ...
+GPU available: True (cuda), used: False
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/pytorch_lightning/trainer/setup.py:187: GPU available but not used. You can set it
+ by doing `Trainer(accelerator='gpu')`.
+`Trainer(limit_train_batches=1.0)` was configured so 100% of the batches per epoch will be used..
+`Trainer(limit_val_batches=1.0)` was configured so 100% of the batches will be used..
+/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/lightning_fabric/plugins/environments/slurm.py:204: The `srun` command is availabl
+e on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python /hom
+e/paraskevopoulosk/chameleon/00_seg_training_cha ...
+Loading train set.. in /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT_2/train_set.npy
+Number of windows in the train set: 8340
+Loading valid set.. in /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT_2/valid_set.npy
+Number of windows in the valid set: 1042
+
+  | Name  | Type                       | Params
+-----------------------------------------------------
+0 | model | ResNetTimeSeriesClassifier | 133 K
+1 | loss  | CrossEntropyLoss           | 0
+-----------------------------------------------------
+133 K     Trainable params
+0         Non-trainable params
+133 K     Total params
+0.534     Total estimated model params size (MB)
+Sanity Checking DataLoader 0: 100%|████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:02<00:00,  0.92it/s]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_0.pdf
+Epoch 0: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:37<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_0.pdf:03<00:00,  1.36it/s]
+Epoch 1: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:38<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_1.pdf:03<00:00,  1.37it/s]
+Epoch 2: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:38<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_2.pdf:03<00:00,  1.36it/s]
+Epoch 3: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:37<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_3.pdf:03<00:00,  1.34it/s]
+Epoch 4: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:38<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_4.pdf:03<00:00,  1.35it/s]
+Epoch 5: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:37<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_5.pdf:03<00:00,  1.33it/s]
+Epoch 6: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:38<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_6.pdf:03<00:00,  1.37it/s]
+Epoch 7: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:36<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_7.pdf:03<00:00,  1.34it/s]
+Epoch 8: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:39<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_8.pdf:03<00:00,  1.38it/s]
+Epoch 9: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:38<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_9.pdf:03<00:00,  1.35it/s]
+Epoch 10: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:36<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_10.pdf03<00:00,  1.35it/s]
+Epoch 11: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:35<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_11.pdf03<00:00,  1.34it/s]
+Epoch 12: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:39<00:00,  0.15it/s, v_num=3]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/valid_confusion_matrix_epoch_12.pdf03<00:00,  1.35it/s]
+Epoch 12: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [03:43<00:00,  0.15it/s, v_num=3]Loading test set.. in /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT_2/test_set.npy
+Number of windows in the test set: 1044
+Restoring states from the checkpoint path at /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/ResNet_v1_base/checkpoints/epoch=2-step=99-loss=0.2568.ckpt
+Loaded model weights from the checkpoint at /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/ResNet_v1_base/checkpoints/epoch=2-step=99-loss=0.2568.ckpt
+Testing DataLoader 0: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 5/5 [00:03<00:00,  1.32it/s]Saved confusion matrix: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT/confusion_matrices/test_confusion_matrix_epoch_13.pdf
+Testing DataLoader 0: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 5/5 [00:03<00:00,  1.25it/s]
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+       Test metric             DataLoader 0
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   test/Accuracy_epoch              1.0
+      test/F1_epoch                 1.0
+  test/Precision_epoch              1.0
+    test/Recall_epoch               1.0
+     test/loss_epoch        0.25593748688697815
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
