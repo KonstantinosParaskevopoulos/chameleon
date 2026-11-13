@@ -1,2 +1,4 @@
 *.pyc
 g_scan_util/dataset_shaping/pinpoints_txt/
+segmentation_results_OLD/
+segmentation_results/
