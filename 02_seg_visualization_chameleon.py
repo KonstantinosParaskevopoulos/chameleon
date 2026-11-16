@@ -345,8 +345,12 @@ for n_trace in range(min(16, len(starts))):
 
     # Classification
     ax[2].set_xlim(lim)
-    ax[2].plot(np.argmax(classifications[n_trace], axis=1))
-
+    #ax[2].plot(np.argmax(classifications[n_trace], axis=1))
+    predictions = np.argmax(classifications[n_trace], axis=1)
+    
+    x = np.arange(len(predictions)) * stride
+    
+    ax[2].plot(x, predictions)
     # Save
     plot_output_file = os.path.join(
         plot_output_dir,
