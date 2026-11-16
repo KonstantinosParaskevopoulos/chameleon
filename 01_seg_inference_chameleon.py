@@ -50,9 +50,9 @@ stride = stride_per_counter[countermeasure]#100
 classifications = classifyTrace(chameleon_file, module, stride, window_size, batch_size=1024)
 saveClassification(classifications, output_file)
 
-##################################################
-# Screening
-##################################################
+#########################################################
+# Screening Also in "02_seg_visualization_chameleon.py"
+#########################################################
 print("Start: Screening")
 classification_file = output_file #"</path/to/classification_output_file>"
 
@@ -83,6 +83,15 @@ CPs = []
 
 for classification, gt, gt_e in tqdm(zip(classifications, gts_starts, gts_ends), total=len(classifications)):
     CPs.append(segment(classification, major_filter_size, stride, init_min_distance))
+
+##################################################################################
+##################################################################################
+##################################################################################
+#------------------------------ It works until here -----------------------------#
+##################################################################################
+##################################################################################
+##################################################################################
+
 
 # Remove false positive and false negatives from the identified COs
 

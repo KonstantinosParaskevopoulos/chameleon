@@ -54,7 +54,19 @@ print("Start: Screening")
 classification_file = output_file #"</path/to/classification_output_file>"
 
 labels = loaderGt(chameleon_file)
-classifications = np.load(classification_file, mmap_mode='r')
+
+##################################################################################
+#classifications = np.load(classification_file, mmap_mode='r')
+##################################################################################
+classification_values = np.load(classification_file, mmap_mode='r')
+
+offsets_file = classification_file.rsplit('.', 1)[0] + '_offsets.npy'
+classification_offsets = np.load(offsets_file, mmap_mode='r')
+
+classifications = [
+    classification_values[classification_offsets[i]:classification_offsets[i + 1]]
+    for i in range(len(classification_offsets) - 1)
+]
 
 gts_starts = []
 gts_ends = []
@@ -62,7 +74,7 @@ for label in labels:
     gts_starts.append(label['start'])
     gts_ends.append(label['end'])
 
-init_min_distance = 150_000
+init_min_distance = 100_000
 
 major_filter_size = 150
 CPs = []
@@ -216,61 +228,135 @@ for idx, (trace_starts, trace_ends) in enumerate(zip(starts, ends)):
 ##################################################
 # Visualization
 ##################################################
+# print("Visualization . . .")
+
+# # Output directory for plots
+# plot_output_dir = "plots"#f"{dataset_out_path}/plots"
+# os.makedirs(plot_output_dir, exist_ok=True)
+
+# n_trace = 0
+# for n_trace in range(16):
+#     center = 100_000
+#     margin = 20_000
+#     lim = (center-margin, center+margin)
+
+#     fig, ax = plt.subplots(3, figsize=(13, 7))
+#     plt.rcParams.update({'font.size': 18})
+#     fig.tight_layout(pad=2.0)
+
+#     ax[0].set_xlim(lim)
+#     for sample in starts[n_trace][1:]:
+#         ax[0].axvline(x=sample, color='black', linestyle='-')
+#     ax[0].axvline(x=starts[n_trace][0], color='black', linestyle='-', label="Found CO's start")
+
+#     for sample in gts_starts[n_trace][1:]:
+#         ax[0].axvline(x=sample//stride, color='r', linestyle='--')
+#     ax[0].axvline(x=gts_starts[n_trace][0]//stride, color='r', linestyle='--', label='Start GT')
+#     ax[0].legend(loc='lower right', bbox_to_anchor=(1, 0.95))
+
+#     ax[1].set_xlim(lim)
+#     for sample in ends[n_trace][1:]:
+#         ax[1].axvline(x=sample, color='grey', linestyle='-')
+#     ax[1].axvline(x=ends[n_trace][0], color='grey', linestyle='-', label="Found CO's end")
+
+#     for sample in gts_ends[n_trace][1:]:
+#         ax[1].axvline(x=sample//stride, color='y', linestyle='--')
+#     ax[1].axvline(x=gts_ends[n_trace][0]//stride, color='y', linestyle='--', label='End GT')
+#     ax[1].legend(loc='lower right', bbox_to_anchor=(1, 0.95))
+
+#     ax[2].set_xlim(lim)
+#     ax[2].plot(np.argmax(classifications[n_trace], axis=1))
+
+#     # # Save figure
+#     # output_file = os.path.join(plot_output_dir, f"trace_{n_trace}_visualization.png")
+#     # fig.savefig(output_file, dpi=300, bbox_inches='tight')
+#     # plt.close(fig)
+
+#     # print(f"Visualization saved to: {output_file}")
+#     # print(f"End! Results in: {dataset_out_path}")
+
+#     # Save figure as PNG and PDF
+#     plot_output_file = os.path.join(plot_output_dir, f"trace_{n_trace}_visualization")
+
+#     fig.savefig(f"{plot_output_file}.png", dpi=300, bbox_inches='tight')
+#     fig.savefig(f"{plot_output_file}.pdf", bbox_inches='tight')
+
+#     plt.close(fig)
+
+# print(f"Visualizations saved to: {plot_output_file}.png and {plot_output_file}.pdf")
+# print(f"End! Results in: {dataset_out_path}")
+
 print("Visualization . . .")
 
-# Output directory for plots
-plot_output_dir = "plots"#f"{dataset_out_path}/plots"
+plot_output_dir = "plots"
 os.makedirs(plot_output_dir, exist_ok=True)
 
-n_trace = 0
-for n_trace in range(16):
+for n_trace in range(min(16, len(starts))):
+
     center = 100_000
-    margin = 20_000
+    margin = 100_000
     lim = (center-margin, center+margin)
 
     fig, ax = plt.subplots(3, figsize=(13, 7))
     plt.rcParams.update({'font.size': 18})
     fig.tight_layout(pad=2.0)
 
+    # Starts
     ax[0].set_xlim(lim)
-    for sample in starts[n_trace][1:]:
-        ax[0].axvline(x=sample, color='black', linestyle='-')
-    ax[0].axvline(x=starts[n_trace][0], color='black', linestyle='-', label="Found CO's start")
 
-    for sample in gts_starts[n_trace][1:]:
-        ax[0].axvline(x=sample//stride, color='r', linestyle='--')
-    ax[0].axvline(x=gts_starts[n_trace][0]//stride, color='r', linestyle='--', label='Start GT')
+    for i, sample in enumerate(starts[n_trace]):
+        ax[0].axvline(
+            x=sample,
+            color='black',
+            linestyle='-',
+            label="Found CO's start" if i == 0 else None
+        )
+
+    for i, sample in enumerate(gts_starts[n_trace]):
+        ax[0].axvline(
+            x=sample // stride,
+            color='r',
+            linestyle='--',
+            label='Start GT' if i == 0 else None
+        )
+
     ax[0].legend(loc='lower right', bbox_to_anchor=(1, 0.95))
 
+    # Ends
     ax[1].set_xlim(lim)
-    for sample in ends[n_trace][1:]:
-        ax[1].axvline(x=sample, color='grey', linestyle='-')
-    ax[1].axvline(x=ends[n_trace][0], color='grey', linestyle='-', label="Found CO's end")
 
-    for sample in gts_ends[n_trace][1:]:
-        ax[1].axvline(x=sample//stride, color='y', linestyle='--')
-    ax[1].axvline(x=gts_ends[n_trace][0]//stride, color='y', linestyle='--', label='End GT')
+    for i, sample in enumerate(ends[n_trace]):
+        ax[1].axvline(
+            x=sample,
+            color='grey',
+            linestyle='-',
+            label="Found CO's end" if i == 0 else None
+        )
+
+    for i, sample in enumerate(gts_ends[n_trace]):
+        ax[1].axvline(
+            x=sample // stride,
+            color='y',
+            linestyle='--',
+            label='End GT' if i == 0 else None
+        )
+
     ax[1].legend(loc='lower right', bbox_to_anchor=(1, 0.95))
 
+    # Classification
     ax[2].set_xlim(lim)
     ax[2].plot(np.argmax(classifications[n_trace], axis=1))
 
-    # # Save figure
-    # output_file = os.path.join(plot_output_dir, f"trace_{n_trace}_visualization.png")
-    # fig.savefig(output_file, dpi=300, bbox_inches='tight')
-    # plt.close(fig)
-
-    # print(f"Visualization saved to: {output_file}")
-    # print(f"End! Results in: {dataset_out_path}")
-
-    # Save figure as PNG and PDF
-    plot_output_file = os.path.join(plot_output_dir, f"trace_{n_trace}_visualization")
+    # Save
+    plot_output_file = os.path.join(
+        plot_output_dir,
+        f"trace_{n_trace}_visualization"
+    )
 
     fig.savefig(f"{plot_output_file}.png", dpi=300, bbox_inches='tight')
     fig.savefig(f"{plot_output_file}.pdf", bbox_inches='tight')
 
     plt.close(fig)
 
-print(f"Visualizations saved to: {plot_output_file}.png and {plot_output_file}.pdf")
-print(f"End! Results in: {dataset_out_path}")
+print(f"Visualizations saved to: {plot_output_dir}")
 

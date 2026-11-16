@@ -137,46 +137,109 @@ def removeFalsePositives(COstarts: list, COends: list, classification: np.ndarra
     return starts, ends
 
 
+# def removeFalseNegatives(COstarts: list, COends: list, classification: np.ndarray) -> tuple:
+#     '''
+#     Remove false negatives from identified COs.
+
+#     Parameters
+#     -----------
+#     COstarts : list
+#         List of start points of the COs.
+#     COends : list
+#         List of end points of the COs.
+#     classification : numpy.ndarray
+#         The classification output of the side-channel trace.
+
+#     Returns
+#     -------
+#     list
+#         List of start points of the COs after removing false negatives.
+#     list
+#         List of end points of the COs after removing false negatives.
+#     '''
+
+#     i, j = 1, 0
+#     min_distance = _minCP(COstarts)*0.9
+
+#     while i < len(COstarts)-1 and j < len(COends)-1:
+#         if COstarts[i]-COends[j] > min_distance and \
+#                 majorityFilter(np.argmax(classification[COends[j]:COstarts[i]], axis=1))[1] != 2:
+#             newStart = COends[j]+1
+#             newEnd = COstarts[i]-1
+#             COstarts.append(newStart)
+#             COends.append(newEnd)
+#         i += 1
+#         j += 1
+#     COstarts, COends = sorted(COstarts), sorted(COends)
+#     if COstarts[-1] > COends[-1]:
+#         COends.append(len(classification))
+#     return COstarts, COends
+
 def removeFalseNegatives(COstarts: list, COends: list, classification: np.ndarray) -> tuple:
     '''
     Remove false negatives from identified COs.
-
-    Parameters
-    -----------
-    COstarts : list
-        List of start points of the COs.
-    COends : list
-        List of end points of the COs.
-    classification : numpy.ndarray
-        The classification output of the side-channel trace.
-
-    Returns
-    -------
-    list
-        List of start points of the COs after removing false negatives.
-    list
-        List of end points of the COs after removing false negatives.
     '''
 
+    # No candidate regions
+    if len(COstarts) == 0 or len(COends) == 0:
+        return COstarts, COends
+
+    # Estimate minimum distance only when multiple starts exist
+    estimated_distance = _minCP(COstarts)
+
+    if estimated_distance is None:
+        min_distance = 0
+    else:
+        min_distance = estimated_distance * 0.9
+
     i, j = 1, 0
-    min_distance = _minCP(COstarts)*0.9
 
     while i < len(COstarts)-1 and j < len(COends)-1:
-        if COstarts[i]-COends[j] > min_distance and \
+        if COstarts[i] - COends[j] > min_distance and \
                 majorityFilter(np.argmax(classification[COends[j]:COstarts[i]], axis=1))[1] != 2:
-            newStart = COends[j]+1
-            newEnd = COstarts[i]-1
+
+            newStart = COends[j] + 1
+            newEnd = COstarts[i] - 1
+
             COstarts.append(newStart)
             COends.append(newEnd)
+
         i += 1
         j += 1
+
     COstarts, COends = sorted(COstarts), sorted(COends)
-    if COstarts[-1] > COends[-1]:
-        COends.append(len(classification))
+
+    if len(COstarts) > 0 and len(COends) > 0:
+        if COstarts[-1] > COends[-1]:
+            COends.append(len(classification))
+
     return COstarts, COends
 
 
-def _minCP(starts) -> int:
+# def _minCP(starts) -> int:
+
+#     distances = []
+#     for i in range(1, len(starts)):
+#         distance = starts[i] - starts[i - 1]
+#         distances.append(distance)
+
+#     # Take the 100 smallest distances
+#     distances = sorted(distances)[:100]
+
+#     # Remove outliers
+#     filtered_distances = _removeOutliers(distances)
+
+#     # Return the mean of the remaining distances
+#     if filtered_distances:
+#         min_distance = np.mean(filtered_distances)
+#     else:
+#         min_distance = float('inf')
+
+#     return min_distance
+
+def _minCP(starts):
+    if len(starts) < 2:
+        return None
 
     distances = []
     for i in range(1, len(starts)):
@@ -191,19 +254,34 @@ def _minCP(starts) -> int:
 
     # Return the mean of the remaining distances
     if filtered_distances:
-        min_distance = np.mean(filtered_distances)
-    else:
-        min_distance = float('inf')
+        return np.mean(filtered_distances)
 
-    return min_distance
+    return None
 
+
+# def _removeOutliers(distances):
+#     q1 = np.percentile(distances, 25)
+#     q3 = np.percentile(distances, 75)
+#     iqr = q3 - q1
+#     lower_bound = q1 - 1.5 * iqr
+#     upper_bound = q3 + 1.5 * iqr
+#     filtered_distances = [
+#         d for d in distances if lower_bound <= d <= upper_bound]
+#     return filtered_distances
 
 def _removeOutliers(distances):
+    if len(distances) == 0:
+        return []
+
     q1 = np.percentile(distances, 25)
     q3 = np.percentile(distances, 75)
     iqr = q3 - q1
+
     lower_bound = q1 - 1.5 * iqr
     upper_bound = q3 + 1.5 * iqr
+
     filtered_distances = [
-        d for d in distances if lower_bound <= d <= upper_bound]
+        d for d in distances if lower_bound <= d <= upper_bound
+    ]
+
     return filtered_distances
