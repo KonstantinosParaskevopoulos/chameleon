@@ -1,0 +1,17 @@
+(/local/scratch/paraskevopoulosk/chameleon) paraskevopoulosk@anton:~/chameleon$ python -m 01_seg_inference_chameleon
+/local/scratch/paraskevopoulosk/chameleon/lib/python3.11/site-packages/lightning_fabric/__init__.py:41: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+Start: Sliding Window Classification
+Loaded checkpoint: /local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_OUT_2/ResNet_v1_base/checkpoints/epoch=2-step=99-loss=0.2568.ckpt
+12142it [54:38:15, 14.42s/it]
+ 67%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                  100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████13127it [58:41:39, 16.10s/it]                                                                                                                            Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/paraskevopoulosk/chameleon/01_seg_inference_chameleon.py", line 50, in <module>
+    classifications = classifyTrace(chameleon_file, module, stride, window_size, batch_size=1024)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/inference_pipeline/sliding_window_classification.py", line 200, in classifyTrace
+    segmentation = _slidingWindowClassify(module, traces, device,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/paraskevopoulosk/chameleon/inference_pipeline/sliding_window_classification.py", line 67, in _slidingWindowClassify
+    classified_points = np.asarray(classified_points)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
