@@ -84,47 +84,72 @@ def extractEdges(square_signal: np.ndarray) -> np.ndarray:
     return np.asarray(starts), np.asarray(ends)
 
 
-def minCPsLenght(CPs: dict) -> int:
-    '''
-    Compute the minimum distance between two following CPs.
+# def minCPsLenght(CPs: dict) -> int:
+#     '''
+#     Compute the minimum distance between two following CPs.
 
-    Parameters
-    ----------
-    `CPs` : dict
-        The starting sample for each CPs.
+#     Parameters
+#     ----------
+#     `CPs` : dict
+#         The starting sample for each CPs.
 
-    Returns
-    -------
-    The minimum distance between two following CPs.
-    '''
+#     Returns
+#     -------
+#     The minimum distance between two following CPs.
+#     '''
 
-    # Handle empty list case
-    if len(CPs['starts']) == 0 or len(CPs['ends']) == 0:
-        return float('inf')
+#     # Handle empty list case
+#     if len(CPs['starts']) == 0 or len(CPs['ends']) == 0:
+#         return float('inf')
  
-    distances = []
-    for i in range(1, len(CPs['starts'])):
-        distance = CPs['starts'][i] - CPs['starts'][i - 1]
-        distances.append(distance)
+#     distances = []
+#     for i in range(1, len(CPs['starts'])):
+#         distance = CPs['starts'][i] - CPs['starts'][i - 1]
+#         distances.append(distance)
     
-    # Take the 100 smallest distances
+#     # Take the 100 smallest distances
+#     distances = sorted(distances)[:100]
+    
+#     # Remove outliers
+#     q1 = np.percentile(distances, 25)
+#     q3 = np.percentile(distances, 75)
+#     iqr = q3 - q1
+#     lower_bound = q1 - 1.5 * iqr
+#     upper_bound = q3 + 1.5 * iqr
+#     filtered_distances = [d for d in distances if lower_bound <= d <= upper_bound]
+    
+#     # Return the mean of the remaining distances
+#     if filtered_distances:
+#         min_distance = np.mean(filtered_distances)
+#     else:
+#         min_distance = float('inf')
+            
+#     return min_distance
+
+def minCPsLenght(CPs: dict):
+    if len(CPs['starts']) < 2:
+        return None
+
+    distances = [
+        CPs['starts'][i] - CPs['starts'][i - 1]
+        for i in range(1, len(CPs['starts']))
+    ]
+
     distances = sorted(distances)[:100]
-    
-    # Remove outliers
+
     q1 = np.percentile(distances, 25)
     q3 = np.percentile(distances, 75)
     iqr = q3 - q1
+
     lower_bound = q1 - 1.5 * iqr
     upper_bound = q3 + 1.5 * iqr
-    filtered_distances = [d for d in distances if lower_bound <= d <= upper_bound]
-    
-    # Return the mean of the remaining distances
-    if filtered_distances:
-        min_distance = np.mean(filtered_distances)
-    else:
-        min_distance = float('inf')
-            
-    return min_distance
+
+    filtered_distances = [
+        d for d in distances
+        if lower_bound <= d <= upper_bound
+    ]
+
+    return np.mean(filtered_distances) if filtered_distances else None
 
 
 def percentileCPsLenght(startCPs: np.ndarray, percentile: int = 5) -> int:
@@ -333,56 +358,104 @@ def _extract(classifications, offsets, first):
         
     return startCPs, endCPs
 
+# def _refine(classification, major_filter_size, CPs):
+#     '''
+#     Refine the segmentation parameters to avoid false positive CPs.
+    
+#     Parameters
+#     ----------
+#     `classifications` : np.ndarray
+#         The sliding windows classification output.
+#     `major_filter_size` : int
+#         The kernel size of the majority filter.
+#     `avg_co_lenght` : int
+#         The average distance between two CPs.
+#     `CPs` : np.ndarray
+#         The starting sample for each CPs.
+    
+#     Returns
+#     -------
+#     The refined kernel size of the majority filter, the refined classification output and the refined offsets.
+#     '''
+#     scale = 0.8
+#     major_filter_size = _refineMajorFilterSize(major_filter_size)
+#     min_distance = int(minCPsLenght(CPs)*scale)
+
+#     sub_classifications = []
+#     offsets = []
+     
+#     if len(CPs['starts']) == 0 or len(CPs['ends']) == 0:
+#         sub_classifications.append(classification)
+#         offsets.append(0)
+#         return major_filter_size, min_distance, sub_classifications, offsets
+    
+#     # If can still be a CO at the beginning of the signal
+#     if CPs['starts'][0] > min_distance:
+#         sub_classifications.append(classification[: CPs['starts'][0]])
+#         offsets.append(0)
+            
+#     # If can be two COs consecutives
+#     for i in range(1, len(CPs['starts'])):
+#         if CPs['starts'][i] - CPs['starts'][i - 1] > 2*min_distance:
+#             offset = int(min_distance*0.8)
+#             sub_classifications.append(classification[CPs['starts'][i-1]+offset: CPs['starts'][i]+1])
+#             offsets.append(CPs['starts'][i-1]+offset)
+
+#     # If can still be a CO at the end of the signal
+#     if len(classification) - CPs['starts'][-1] > 2*min_distance:
+#         offset = int(min_distance)
+#         sub_classifications.append(classification[CPs['starts'][-1]+offset:])
+#         offsets.append(CPs['starts'][-1]+offset)
+     
+#     return major_filter_size, min_distance, sub_classifications, offsets
+
+
 def _refine(classification, major_filter_size, CPs):
-    '''
-    Refine the segmentation parameters to avoid false positive CPs.
-    
-    Parameters
-    ----------
-    `classifications` : np.ndarray
-        The sliding windows classification output.
-    `major_filter_size` : int
-        The kernel size of the majority filter.
-    `avg_co_lenght` : int
-        The average distance between two CPs.
-    `CPs` : np.ndarray
-        The starting sample for each CPs.
-    
-    Returns
-    -------
-    The refined kernel size of the majority filter, the refined classification output and the refined offsets.
-    '''
+
     scale = 0.8
     major_filter_size = _refineMajorFilterSize(major_filter_size)
-    min_distance = int(minCPsLenght(CPs)*scale)
-    
+
     sub_classifications = []
     offsets = []
-     
+
+    # No complete CO detected: continue with the original classification
     if len(CPs['starts']) == 0 or len(CPs['ends']) == 0:
         sub_classifications.append(classification)
         offsets.append(0)
-        return major_filter_size, min_distance, sub_classifications, offsets
-    
-    # If can still be a CO at the beginning of the signal
-    if CPs['starts'][0] > min_distance:
-        sub_classifications.append(classification[: CPs['starts'][0]])
-        offsets.append(0)
-            
-    # If can be two COs consecutives
-    for i in range(1, len(CPs['starts'])):
-        if CPs['starts'][i] - CPs['starts'][i - 1] > 2*min_distance:
-            offset = int(min_distance*0.8)
-            sub_classifications.append(classification[CPs['starts'][i-1]+offset: CPs['starts'][i]+1])
-            offsets.append(CPs['starts'][i-1]+offset)
+        return major_filter_size, 0, sub_classifications, offsets
 
-    # If can still be a CO at the end of the signal
-    if len(classification) - CPs['starts'][-1] > 2*min_distance:
+    # Estimate minimum distance only when multiple starts exist
+    estimated_distance = minCPsLenght(CPs)
+
+    if estimated_distance is None:
+        min_distance = 0
+    else:
+        min_distance = int(estimated_distance * scale)
+
+    # Search for a possible CO before the first detected start
+    if CPs['starts'][0] > min_distance:
+        sub_classifications.append(classification[:CPs['starts'][0]])
+        offsets.append(0)
+
+    # Search between consecutive detected COs
+    for i in range(1, len(CPs['starts'])):
+        if CPs['starts'][i] - CPs['starts'][i - 1] > 2 * min_distance:
+            offset = int(min_distance * 0.8)
+            sub_classifications.append(
+                classification[CPs['starts'][i - 1] + offset:CPs['starts'][i] + 1]
+            )
+            offsets.append(CPs['starts'][i - 1] + offset)
+
+    # Search after the last detected start
+    if len(classification) - CPs['starts'][-1] > 2 * min_distance:
         offset = int(min_distance)
-        sub_classifications.append(classification[CPs['starts'][-1]+offset:])
-        offsets.append(CPs['starts'][-1]+offset)
-     
+        sub_classifications.append(
+            classification[CPs['starts'][-1] + offset:]
+        )
+        offsets.append(CPs['starts'][-1] + offset)
+
     return major_filter_size, min_distance, sub_classifications, offsets
+
 
 def _refineMajorFilterSize(major_filter_size):
     if major_filter_size > 299:
