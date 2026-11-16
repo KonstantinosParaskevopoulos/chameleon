@@ -57,8 +57,19 @@ print("Start: Screening")
 classification_file = output_file #"</path/to/classification_output_file>"
 
 labels = loaderGt(chameleon_file)
-classifications = np.load(classification_file, mmap_mode='r')
+##################################################################################
+#classifications = np.load(classification_file, mmap_mode='r')
+##################################################################################
+classification_values = np.load(classification_file, mmap_mode='r')
 
+offsets_file = classification_file.rsplit('.', 1)[0] + '_offsets.npy'
+classification_offsets = np.load(offsets_file, mmap_mode='r')
+
+classifications = [
+    classification_values[classification_offsets[i]:classification_offsets[i + 1]]
+    for i in range(len(classification_offsets) - 1)
+]
+##################################################################################
 gts_starts = []
 gts_ends = []
 for label in labels:
