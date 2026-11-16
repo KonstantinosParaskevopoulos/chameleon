@@ -64,7 +64,7 @@ def _slidingWindowClassify(module, traces, device, window_size, stride, batch_si
         ret = _classify(trace, module, window_size, device, stride, batch_size)
         classified_points.append(ret)
 
-    classified_points = np.asarray(classified_points)
+    #classified_points = np.asarray(classified_points) #To return the list directly instead of converting it to a NumPy array
 
     return classified_points
 
@@ -202,20 +202,52 @@ def classifyTrace(trace_file: str,
     return segmentation
 
 
-def saveClassification(segmentation: np.ndarray,
+# def saveClassification(segmentation: np.ndarray,  #Original function
+#                        output_file: str) -> None:
+#     """
+#     Save the segmentation to a file.
+
+#     Parameters
+#     ----------
+#     `segmentation` : np.ndarray
+#         The segmentation to save.
+#     `output_file` : str
+#         The file where the segmentation will be saved.
+#     """
+
+#     np.save(output_file, segmentation)
+
+def saveClassification(segmentation: list,  # This concatenates all predictions into one array and saves the starting offset of each trace's predictions.
                        output_file: str) -> None:
     """
-    Save the segmentation to a file.
+    Save classifications of variable-length traces.
 
-    Parameters
-    ----------
-    `segmentation` : np.ndarray
-        The segmentation to save.
-    `output_file` : str
-        The file where the segmentation will be saved.
+    Predictions are stored in one flat array, with a separate
+    offsets array identifying the predictions belonging to each trace.
     """
 
-    np.save(output_file, segmentation)
+    segmentation = [np.asarray(s) for s in segmentation]
+
+    # All predictions must have compatible dimensions except axis 0.
+    trailing_shapes = {s.shape[1:] for s in segmentation}
+    if len(trailing_shapes) > 1:
+        raise ValueError("Classification arrays have incompatible shapes.")
+
+    lengths = np.asarray([len(s) for s in segmentation], dtype=np.int64)
+
+    offsets = np.zeros(len(lengths) + 1, dtype=np.int64)
+    offsets[1:] = np.cumsum(lengths)
+
+    predictions = np.concatenate(segmentation, axis=0)
+
+    offsets_file = output_file.rsplit('.', 1)[0] + '_offsets.npy'
+
+    np.save(output_file, predictions)
+    np.save(offsets_file, offsets)
+
+    #print(f"Saved predictions: {output_file}")
+    #print(f"Saved offsets: {offsets_file}")
+
 
 def _dataLoader(chunk_file):
     with h5py.File(chunk_file, 'r', libver='latest') as hf_chunk:
