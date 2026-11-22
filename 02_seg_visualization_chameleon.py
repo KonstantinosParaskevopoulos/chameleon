@@ -153,7 +153,7 @@ print(f"Total end mean FNR: {round(np.mean(fnrs_e)*100,2)}%")
 ##################################################
 print("Saving segmentation results...")
 
-segmentation_output_dir = "segmentation_results" #os.path.join(dataset_out_path, "segmentation_results")
+segmentation_output_dir = os.path.join(dataset_out_path, "segmentation_results")
 os.makedirs(segmentation_output_dir, exist_ok=True)
 
 for idx, (trace_starts, trace_ends) in enumerate(zip(starts, ends)):
@@ -288,7 +288,7 @@ for idx, (trace_starts, trace_ends) in enumerate(zip(starts, ends)):
 
 print("Visualization . . .")
 
-plot_output_dir = "plots"
+plot_output_dir = os.path.join(dataset_out_path, "plots") #f"{dataset_out_path}plots"
 os.makedirs(plot_output_dir, exist_ok=True)
 
 for n_trace in range(min(16, len(starts))):
