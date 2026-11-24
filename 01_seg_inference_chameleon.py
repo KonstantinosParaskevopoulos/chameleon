@@ -12,7 +12,7 @@ from inference_pipeline.heuristic import removeFalseNegatives, removeFalsePositi
 ##################################################
 # Directories Setup
 ##################################################
-countermeasure="base"
+countermeasure="rd"
 chameleon_path = f"/local/scratch/paraskevopoulosk/Datasets/{countermeasure.upper()}/CHAM_IN/"
 dataset_out_path = f"/local/scratch/paraskevopoulosk/Datasets/{countermeasure.upper()}/CHAM_OUT_2/"
 model_dir=f"{dataset_out_path}ResNet_v1_{countermeasure}/checkpoints"

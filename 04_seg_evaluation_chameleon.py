@@ -10,7 +10,7 @@ from inference_pipeline.debug import loaderGt
 # Configuration
 ##################################################
 
-COUNTERMEASURE = "base"
+COUNTERMEASURE = "rd"
 
 CHAMELEON_PATH = (
     f"/local/scratch/paraskevopoulosk/Datasets/"

@@ -13,7 +13,7 @@ from inference_pipeline.heuristic import removeFalseNegatives, removeFalsePositi
 # CNN dataset creation
 ##################################################
 print("Start: CNN dataset creation")
-countermeasure="base"
+countermeasure="rd"
 chameleon_path = f"/local/scratch/paraskevopoulosk/Datasets/{countermeasure.upper()}/CHAM_IN/"
 dataset_out_path = f"/local/scratch/paraskevopoulosk/Datasets/{countermeasure.upper()}/CHAM_OUT_2/"
 
