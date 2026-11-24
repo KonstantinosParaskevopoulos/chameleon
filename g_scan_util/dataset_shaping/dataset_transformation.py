@@ -3,10 +3,10 @@ import numpy as np
 from tqdm import tqdm
 from pathlib import Path
 
-countermeasure = "base"
+countermeasure = "rd"
 DATASET_DIR = f"/local/scratch/paraskevopoulosk/Datasets/{countermeasure.upper()}/"
-CHAMELEON_FILE=f"{DATASET_DIR}chameleon_{countermeasure}_chunk_1.h5"
-OUTPUT_FILE=f"{DATASET_DIR}chameleon_{countermeasure}_chunk_1_transformed.h5"
+CHAMELEON_FILE=f"{DATASET_DIR}chameleon_{countermeasure}_chunk_1_original.h5"
+OUTPUT_FILE=f"{DATASET_DIR}/CHAM_IN/chameleon_{countermeasure}_chunk_1.h5"
 
 def copy_attrs(src, dst):
     """Copy HDF5 attributes."""

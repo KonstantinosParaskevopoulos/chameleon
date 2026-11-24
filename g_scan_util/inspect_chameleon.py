@@ -1,7 +1,10 @@
 import h5py
 import numpy as np
 
-dataset_path = "/local/scratch/paraskevopoulosk/Datasets/BASE/CHAM_IN/chameleon_base_chunk_1.h5"
+
+countermeasure="rd"
+
+dataset_path = f"/local/scratch/paraskevopoulosk/Datasets/{countermeasure.upper()}/CHAM_IN/chameleon_{countermeasure}_chunk_1.h5"
 
 with h5py.File(dataset_path, "r") as hf:
 
